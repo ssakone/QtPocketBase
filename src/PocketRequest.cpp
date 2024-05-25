@@ -8,6 +8,7 @@ PocketRequest::PocketRequest(QObject *parent)
     : QObject{parent}
 {
     manager = new QNetworkAccessManager(this);
+
 }
 
 PocketBaseCollectionPromise *PocketRequest::getOne(QString id, QJsonObject options)
@@ -73,7 +74,6 @@ PocketBaseCollectionPromise *PocketRequest::updateWithFile(QString id, QJSValue 
     return makeRequest(&request, HttpMethod::PATCH, multiPart);
 }
 
-
 PocketBaseCollectionPromise *PocketRequest::deleteFile(QString id, QJSValue files, QJsonObject options)
 {
     QJsonObject fobj = files.toVariant().toJsonObject();
@@ -133,7 +133,6 @@ PocketBaseCollectionPromise *PocketRequest::HttpPut(QString path, QJsonObject da
     return makeRequest(getRequest(QUrlQuery(), true, path, true), HttpMethod::PUT, QJsonDocument(datas).toJson());
 }
 
-
 PocketBaseCollectionPromise *PocketRequest::HttpPatch(QString path, QJSValue data, QJSValue options)
 {
     QJsonObject *obj = PocketUtility::jsvalueToJsonObject(options);
@@ -155,7 +154,8 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
 
     reply = manager->sendCustomRequest(request, methodToString(method));
 
-    connect(reply, &QNetworkReply::finished, [=](){
+    connect(reply, &QNetworkReply::finished, [=]()
+            {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
         }else if (reply->error() != QNetworkReply::ConnectionRefusedError && reply->error() != QNetworkReply::HostNotFoundError && reply->error() != QNetworkReply::TimeoutError && reply->error() != QNetworkReply::UnknownNetworkError) {
@@ -167,7 +167,8 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
         }
     });
 
-    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error){
+    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error)
+            {
         if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError) {
             QJsonObject errorJson;
             errorJson.insert("code", 0);
@@ -186,7 +187,8 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
     QNetworkReply *reply;
 
     reply = manager->sendCustomRequest(request, methodToString(method), data);
-    connect(reply, &QNetworkReply::finished, [reply, promise](){
+    connect(reply, &QNetworkReply::finished, [reply, promise, this]()
+            {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
         }else if (reply->error() != QNetworkReply::ConnectionRefusedError && reply->error() != QNetworkReply::HostNotFoundError && reply->error() != QNetworkReply::TimeoutError && reply->error() != QNetworkReply::UnknownNetworkError) {
@@ -199,7 +201,8 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
         }
     });
 
-    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error){
+    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error)
+            {
         if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError) {
             QJsonObject errorJson;
             errorJson.insert("code", reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
@@ -219,7 +222,8 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest *request
 
     reply = manager->sendCustomRequest(*request, methodToString(method), multipart);
 
-    connect(reply, &QNetworkReply::finished, [=](){
+    connect(reply, &QNetworkReply::finished, [=]()
+            {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
         }  else if (reply->error() != QNetworkReply::ConnectionRefusedError && reply->error() != QNetworkReply::HostNotFoundError && reply->error() != QNetworkReply::TimeoutError && reply->error() != QNetworkReply::UnknownNetworkError) {
@@ -231,19 +235,21 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest *request
         }
     });
 
-    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error){
-        if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError) {
-            QJsonObject errorJson;
-            errorJson.insert("code", 0);
-            errorJson.insert("message", reply->errorString());
-            promise->callError(QJSValueList{QString(QJsonDocument(errorJson).toJson())});
-        }
-
-    });
+    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error)
+            {
+                if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError)
+                {
+                    QJsonObject errorJson;
+                    errorJson.insert("code", 0);
+                    errorJson.insert("message", reply->errorString());
+                    promise->callError(QJSValueList{QString(QJsonDocument(errorJson).toJson())});
+                }
+            });
 
     connect(
         reply, &QNetworkReply::uploadProgress,
-        [promise](qint64 bytesSent, qint64 bytesTotal) {
+        [promise](qint64 bytesSent, qint64 bytesTotal)
+        {
             promise->callProgress(QJSValueList{QString::number(bytesSent).toInt(), QString::number(bytesTotal).toInt()});
         });
 
@@ -256,16 +262,15 @@ QNetworkRequest PocketRequest::getRequest(QUrlQuery query, bool contentType, QSt
     QUrl url;
     QString _url = PocketBaseSettings::getApiUrl();
     if (full == true)
-        url = QUrl(_url +  path);
-    else url = QUrl(_url + "/api" + route + path);
+        url = QUrl(_url + path);
+    else
+        url = QUrl(_url + "/api" + route + path);
     url.setQuery(query);
     request.setUrl(url);
     if (contentType)
         request.setRawHeader("Content-Type", "application/json");
     request.setRawHeader("Authorization", PocketBaseSettings::getToken().toUtf8());
     request.setRawHeader("Accept", "application/json");
-
-    // qDebug() << request.url() ;
 
     return request;
 }
@@ -277,7 +282,8 @@ QUrlQuery PocketRequest::getRequestParams(QJsonObject obj)
     QUrlQuery params;
 
     QStringList keys = obj.keys();
-    for (int i = 0; i < keys.size(); i++) {
+    for (int i = 0; i < keys.size(); i++)
+    {
         params.addQueryItem(keys[i], obj.value(keys[i]).toString());
     }
 
@@ -298,7 +304,8 @@ QString PocketRequest::getRoute() const
 
 QByteArray PocketRequest::methodToString(HttpMethod method)
 {
-    switch (method) {
+    switch (method)
+    {
     case HttpMethod::GET:
         return "GET";
     case HttpMethod::POST:
