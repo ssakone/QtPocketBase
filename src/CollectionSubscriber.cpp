@@ -21,11 +21,7 @@ void CollectionSubscriber::subscribe(const QString pattern, const QJSValue callb
     }
 
     callbacks.insert(id, callback);
-    //
-    // idRoutes.insert(pattern, //s.d);
-    // QMap<QString, QStringList>
-    // idRoutes.insert(pattern, QStringList{});
-    // check if pattern is already in the map and if id is on the pattern list
+
     if (idRoutes.contains(pattern)) {
         QStringList ids = idRoutes[pattern];
         if (!ids.contains(id)) {
@@ -57,8 +53,6 @@ void CollectionSubscriber::connect()
         if (data.contains("clientId")) {
             clientId = data.split("id:")[1].split("\n")[0];
             m_connected = true;
-            qDebug() << "Connected to Realtime API";
-            qDebug() << "Client ID: " << clientId;
 
             if (!idRoutes.isEmpty()) {
                 subscribeId("");
@@ -72,9 +66,7 @@ void CollectionSubscriber::connect()
             for (auto& patternId : patterns) {
                 QJSValue caller = callbacks.value(patternId);
                 if (caller.isCallable())
-                    QTimer::singleShot(300, [caller, queryResponse] () {
-                        caller.call(QJSValueList{queryResponse});
-                    });
+                    caller.call(QJSValueList{queryResponse});
             }
 
         }
