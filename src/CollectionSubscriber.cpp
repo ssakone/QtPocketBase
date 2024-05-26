@@ -36,6 +36,19 @@ void CollectionSubscriber::subscribe(const QString pattern, const QJSValue callb
     subscribeId(pattern);
 }
 
+void CollectionSubscriber::unsubscribe(const QString id)
+{
+    for (auto& [key, item] : idRoutes.toStdMap()) {
+        QStringList ids = item;
+        if (ids.contains(id)) {
+            ids.removeOne(id);
+            idRoutes[key] = ids;
+        }
+    }
+
+    callbacks.remove(id);
+}
+
 void CollectionSubscriber::connect()
 {
     QString url = PocketBaseSettings::getApiUrl();
@@ -67,6 +80,9 @@ void CollectionSubscriber::connect()
                 QJSValue caller = callbacks.value(patternId);
                 if (caller.isCallable())
                     caller.call(QJSValueList{queryResponse});
+                else {
+                    qDebug() << "Callback not callable : " << caller.toString();
+                }
             }
 
         }
