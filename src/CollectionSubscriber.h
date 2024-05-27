@@ -15,6 +15,7 @@ public:
     explicit CollectionSubscriber(QObject *parent = nullptr);
 
     Q_INVOKABLE void subscribe(const QString pattern, const QJSValue callback, QString id);
+    Q_INVOKABLE void unsubscribe(const QString id);
     Q_INVOKABLE void connect();
     void subscribeId(QString pattern);
 

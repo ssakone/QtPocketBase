@@ -45,6 +45,7 @@ public:
     Q_INVOKABLE void logout();
 
     Q_INVOKABLE void subscribe(const QString pattern, const QJSValue callback, QString id = QString::number(QRandomGenerator::global()->generate()).toUtf8().toBase64().mid(0, 10));
+    Q_INVOKABLE void unsubscribe(const QString id);
     Q_INVOKABLE void connect();
 
 

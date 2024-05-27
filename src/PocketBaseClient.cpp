@@ -184,6 +184,11 @@ void PocketBaseClient::subscribe(const QString pattern, const QJSValue callback,
         subscriber->subscribe(pattern, callback, id);
 }
 
+void PocketBaseClient::unsubscribe(const QString id)
+{
+    subscriber->unsubscribe(id);
+}
+
 void PocketBaseClient::connect()
 {
     subscriber->connect();
