@@ -11,42 +11,50 @@ CollectionSubscriber::CollectionSubscriber(QObject *parent)
     manager = new QNetworkAccessManager(this);
 }
 
-void CollectionSubscriber::subscribe(const QString pattern, const QJSValue callback, QString id)
+QString CollectionSubscriber::subscribe(const QString topic, const QJSValue callback, QString id = "")
 {
-    for (auto& [key, item] : callbacks.toStdMap()) {
-        if (key == id) {
-            callbacks[key] = item;
-            goto processRequest;
-        }
+    if (id == "") {
+        id = QUuid::createUuid().toString();
     }
 
-    callbacks.insert(id, callback);
-
-    if (idRoutes.contains(pattern)) {
-        QStringList ids = idRoutes[pattern];
-        if (!ids.contains(id)) {
-            ids.append(id);
-            idRoutes[pattern] = ids;
-        }
-    } else {
-        idRoutes.insert(pattern, QStringList{id});
+    if (!callbacks.contains(topic)) {
+        callbacks.insert(topic, {id});
     }
 
-    processRequest:
-    subscribeId(pattern);
+    auto callbackList = callbacks[topic];
+    if (!callbackList.contains(id)) {
+        callbackList.append(id);
+        callbacks[topic] = callbackList;
+    }
+
+    identifiers.insert(id, callback);
+
+    if (!subscriptionList.contains(topic))
+    {
+        if (m_connected)
+            sub(topic);
+        else
+            subscriptionList.append(topic);
+    }
+
+    return id;
 }
 
 void CollectionSubscriber::unsubscribe(const QString id)
 {
-    for (auto& [key, item] : idRoutes.toStdMap()) {
-        QStringList ids = item;
-        if (ids.contains(id)) {
-            ids.removeOne(id);
-            idRoutes[key] = ids;
+    for (auto topic : callbacks.keys()) {
+        QStringList callbackList = callbacks[topic];
+        if (callbackList.contains(id)) {
+            callbackList.removeOne(id);
+            callbacks[topic] = callbackList;
+        }
+
+        if (callbackList.isEmpty()) {
+            subscriptionList.removeOne(topic);
         }
     }
 
-    callbacks.remove(id);
+    identifiers.remove(id);
 }
 
 void CollectionSubscriber::connect()
@@ -66,25 +74,30 @@ void CollectionSubscriber::connect()
         if (data.contains("clientId")) {
             clientId = data.split("id:")[1].split("\n")[0];
             m_connected = true;
-
-            if (!idRoutes.isEmpty()) {
-                subscribeId("");
-            }
+            sub("", true);
 
             emit connetionEstablished();
         } else {
-            QString queryResponse = parseResponse(data);
-            QString event = data.split("event:")[1].split("\n")[0];
-            QStringList patterns = idRoutes[event];
-            for (auto& patternId : patterns) {
-                QJSValue caller = callbacks.value(patternId);
-                if (caller.isCallable())
-                    caller.call(QJSValueList{queryResponse});
-                else {
-                    qDebug() << "Callback not callable : " << caller.toString();
+            QStringList parts = data.split("\n\n");
+            for (auto part : parts) {
+                if (part.isEmpty())
+                    continue;
+
+                QString queryResponse = part.split("data:")[1];
+                QString event = part.split("event:")[1].split("\n")[0];
+                QStringList patterns = callbacks[event];
+                for (QString identifier : patterns) {
+                    QJSValue caller = identifiers[identifier];
+                    if (caller.isCallable())
+                        caller.call(QJSValueList{queryResponse});
+                    else {
+                        identifiers.remove(identifier);
+                        patterns.removeOne(identifier);
+                        callbacks[event] = patterns;
+                        qDebug() << "Callback not callable : " << caller.toString();
+                    }
                 }
             }
-
         }
     });
 
@@ -93,8 +106,9 @@ void CollectionSubscriber::connect()
     });
 }
 
-void CollectionSubscriber::subscribeId(QString pattern)
+void CollectionSubscriber::sub(QString topic, bool all)
 {
+
     QString url = PocketBaseSettings::getApiUrl();
     QString token = PocketBaseSettings::getToken();
 
@@ -103,28 +117,31 @@ void CollectionSubscriber::subscribeId(QString pattern)
     request.setRawHeader("Authorization", QString(token).toUtf8());
     request.setRawHeader("Accept", "*/*");
 
-    QJsonArray patterns = {};
-    for (auto& [key, item] : idRoutes.toStdMap()) {
-        patterns.push_back(key);
+    if (!all)
+        subscriptionList.append(topic);
+
+    QJsonArray subs;
+    for (QString topic : subscriptionList) {
+        subs.append(topic);
     }
 
     QJsonObject json;
     json.insert("clientId", clientId);
-    json.insert("subscriptions", patterns);
+    json.insert("subscriptions", subs);
 
     QJsonDocument doc(json);
     QNetworkReply *reply = manager->post(request, doc.toJson());
     QAbstractSocket::connect(reply, &QNetworkReply::finished, [=](){
         int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         QString data = reply->readAll();
-        if (statusCode != 204) 
+        if (statusCode != 204)
             qDebug() << "error: " << data;
     });
 }
 
 QString CollectionSubscriber::parseResponse(QString reply)
 {
-    reply = reply.split("data:")[1].split("\n\n")[0];
+    reply = reply.split("data:")[1];
     return reply;
 }
 

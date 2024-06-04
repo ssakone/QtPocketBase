@@ -14,10 +14,10 @@ class CollectionSubscriber : public QObject
 public:
     explicit CollectionSubscriber(QObject *parent = nullptr);
 
-    Q_INVOKABLE void subscribe(const QString pattern, const QJSValue callback, QString id);
+    Q_INVOKABLE QString subscribe(const QString pattern, const QJSValue callback, QString id);
     Q_INVOKABLE void unsubscribe(const QString id);
     Q_INVOKABLE void connect();
-    void subscribeId(QString pattern);
+    void sub(QString pattern, bool all = false);
 
     QString parseResponse(QString reply);
 
@@ -26,8 +26,9 @@ public:
     void setConnected(bool newConnected);
 
 private:
-    QMap<QString, QJSValue> callbacks;
-    QMap<QString, QStringList> idRoutes;
+    QMap<QString, QStringList> callbacks;
+    QMap<QString, QJSValue> identifiers;
+    QStringList subscriptionList = {};
     QNetworkRequest subscriptionRequest;
     QNetworkAccessManager *manager;
     QString clientId;

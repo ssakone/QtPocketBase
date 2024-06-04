@@ -42,6 +42,7 @@ public:
 
     // Q_INVOKABLE QString getFileUrl(QString fileId);
 
+    Q_INVOKABLE void clearToken();
     Q_INVOKABLE void logout();
 
     Q_INVOKABLE void subscribe(const QString pattern, const QJSValue callback, QString id = QString::number(QRandomGenerator::global()->generate()).toUtf8().toBase64().mid(0, 10));

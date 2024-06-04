@@ -164,6 +164,11 @@ PocketBaseCollectionPromise *PocketBaseClient::createNewAdmin(QString email, QSt
     return request.create(admin);
 }
 
+void PocketBaseClient::clearToken()
+{
+    setAuthToken("");
+}
+
 void PocketBaseClient::logout()
 {
     setAuthToken("");
