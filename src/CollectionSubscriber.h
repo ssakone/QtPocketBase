@@ -19,9 +19,6 @@ public:
     Q_INVOKABLE void connect();
     void sub(QString pattern, bool all = false);
 
-    QString parseResponse(QString reply);
-
-
     bool connected() const;
     void setConnected(bool newConnected);
 

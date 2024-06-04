@@ -139,12 +139,6 @@ void CollectionSubscriber::sub(QString topic, bool all)
     });
 }
 
-QString CollectionSubscriber::parseResponse(QString reply)
-{
-    reply = reply.split("data:")[1];
-    return reply;
-}
-
 bool CollectionSubscriber::connected() const
 {
     return m_connected;
