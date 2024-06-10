@@ -4,7 +4,6 @@
 #include "CollectionSubscriber.h"
 #include "PocketBaseCollectionPromise.h"
 #include "PocketBaseCollection.h"
-#include "PocketBaseSettings.h"
 
 #include <QObject>
 #include <QRandomGenerator>
@@ -47,7 +46,6 @@ public:
 
     Q_INVOKABLE void subscribe(const QString pattern, const QJSValue callback, QString id = QString::number(QRandomGenerator::global()->generate()).toUtf8().toBase64().mid(0, 10));
     Q_INVOKABLE void unsubscribe(const QString id);
-    Q_INVOKABLE void connect();
 
 
     QString apiUrl() const;
@@ -92,6 +90,7 @@ private:
     QString m_authToken;
     bool m_connected;
     bool m_healthy = false;
+    bool previousHealthState = false;
     bool m_isAuth;
 };
 

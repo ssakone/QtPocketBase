@@ -74,7 +74,7 @@ signals:
 
 private:
     QString m_address = "localhost";
-    QProcess *process;
+    // QProcess *process;
     int m_port = 8090;
     bool m_running = false;
     QString m_hookFolder = "";

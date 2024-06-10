@@ -15,14 +15,11 @@ PocketBaseClient::PocketBaseClient(QObject *parent)
     });
 
     QTimer *timer = new QTimer(this);
-    QObject::connect(timer, &QTimer::timeout, this, [this](){
+    QObject::connect(timer, &QTimer::timeout, this, [=]() {
         isHealthy();
-        if (subscriber->connected() == false) {
-            connect();
-        }
     });
 
-    timer->start(500);
+    timer->start(800);
     isHealthy();
 }
 
@@ -89,10 +86,19 @@ PocketBaseCollectionPromise *PocketBaseClient::isHealthy()
     }
     auto promise = request.HttpGet("/api/health");
     QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [this](auto value){
+
+        if (previousHealthState == false) {
+            // subscriber->restart();
+            // subscriber
+            subscriber->connect();
+            previousHealthState = true;
+        }
         setHealthy(true);
+
     });
     QObject::connect(promise, &PocketBaseCollectionPromise::onError, this, [this](auto value){
         setHealthy(false);
+        previousHealthState = false;
     });
     return promise;
 }
@@ -176,27 +182,12 @@ void PocketBaseClient::logout()
 
 void PocketBaseClient::subscribe(const QString pattern, const QJSValue callback, QString id)
 {
-    if (subscriber->connected() == false) {
-        QTimer *timer = new QTimer(this);
-        QObject::connect(timer, &QTimer::timeout, this, [=](){
-            if (subscriber->connected() == true) {
-                subscriber->subscribe(pattern, callback, id);
-                timer->stop();
-            }
-        });
-        timer->start(5000);
-    } else
-        subscriber->subscribe(pattern, callback, id);
+    subscriber->subscribe(pattern, callback, id);
 }
 
 void PocketBaseClient::unsubscribe(const QString id)
 {
     subscriber->unsubscribe(id);
-}
-
-void PocketBaseClient::connect()
-{
-    subscriber->connect();
 }
 
 
@@ -231,7 +222,7 @@ QList<PocketBaseCollection *> *PocketBaseClient::collectionList() const
 
 QString PocketBaseClient::authToken() const
 {
-    return m_authToken;
+    return PocketBaseSettings::getToken();
 }
 
 void PocketBaseClient::setAuthToken(const QString &newAuthToken)

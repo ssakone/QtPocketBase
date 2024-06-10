@@ -4,6 +4,7 @@
 #include "qjsondocument.h"
 #include "qjsonobject.h"
 #include <QTimer>
+#include <QPointer>
 
 CollectionSubscriber::CollectionSubscriber(QObject *parent)
     : QObject{parent}
@@ -31,10 +32,9 @@ QString CollectionSubscriber::subscribe(const QString topic, const QJSValue call
 
     if (!subscriptionList.contains(topic))
     {
+        subscriptionList.append(topic);
         if (m_connected)
-            sub(topic);
-        else
-            subscriptionList.append(topic);
+            sub(topic);            
     }
 
     return id;
@@ -67,15 +67,19 @@ void CollectionSubscriber::connect()
     subscriptionRequest.setAttribute(QNetworkRequest::RedirectionTargetAttribute, true);
     subscriptionRequest.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
 
+    // manager->setTransferTimeout(2000);
     QNetworkReply *reply = manager->get(subscriptionRequest);
 
     QObject::connect(reply, &QNetworkReply::readyRead, [=](){
         QString data = reply->readAll();
+
+
         if (data.contains("clientId")) {
             clientId = data.split("id:")[1].split("\n")[0];
-            m_connected = true;
+            setConnected(true);
+            // qDebug() << clientId;
+            // qDebug() << "connecting to subscription" << subscriptionList;
             sub("", true);
-
             emit connetionEstablished();
         } else {
             QStringList parts = data.split("\n\n");
@@ -101,6 +105,12 @@ void CollectionSubscriber::connect()
         }
     });
 
+    QObject::connect(reply, &QNetworkReply::errorOccurred, [=]() {
+        QString data = reply->readAll();
+        // qDebug() << "Error: " << data;
+        delete reply;
+    });
+
     QObject::connect(reply, &QNetworkReply::finished, [=](){
         connect();
     });
@@ -117,9 +127,6 @@ void CollectionSubscriber::sub(QString topic, bool all)
     request.setRawHeader("Authorization", QString(token).toUtf8());
     request.setRawHeader("Accept", "*/*");
 
-    if (!all)
-        subscriptionList.append(topic);
-
     QJsonArray subs;
     for (QString topic : subscriptionList) {
         subs.append(topic);
@@ -129,13 +136,20 @@ void CollectionSubscriber::sub(QString topic, bool all)
     json.insert("clientId", clientId);
     json.insert("subscriptions", subs);
 
+
     QJsonDocument doc(json);
-    QNetworkReply *reply = manager->post(request, doc.toJson());
-    QAbstractSocket::connect(reply, &QNetworkReply::finished, [=](){
-        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        QString data = reply->readAll();
+    // qDebug () << "Sending subscription request" << doc.toJson();
+    QNetworkReply *subReply = manager->post(request, doc.toJson());
+    QObject::connect(subReply, &QNetworkReply::finished, [=](){
+        int statusCode = subReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        QString data = subReply->readAll();
         if (statusCode != 204)
-            qDebug() << "error: " << data;
+        {
+            qWarning() << "error: " << data;
+            if (data.contains("invalid client")) {
+                connect();
+            }
+        }
     });
 }
 

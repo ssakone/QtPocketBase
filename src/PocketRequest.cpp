@@ -70,6 +70,8 @@ PocketBaseCollectionPromise *PocketRequest::updateWithFile(QString id, QJSValue 
     PocketUtility::jsonToFormData(multiPart, *obj);
     PocketUtility::jsonFilesToFormData(multiPart, fobj);
 
+    multiPart->dumpObjectTree();
+
     QNetworkRequest request = getRequest(getRequestParams(options), false, "/" + id);
     return makeRequest(&request, HttpMethod::PATCH, multiPart);
 }

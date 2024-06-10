@@ -8,110 +8,110 @@
 PocketBaseServer::PocketBaseServer(QObject *parent)
     : QObject{parent}
 {
-    m_binaryPath = QDir::currentPath() + "/bumas.exe";
-    process = new QProcess(this);
+    // m_binaryPath = QDir::currentPath() + "/bumas.exe";
+    // process = new QProcess(this);
 
-    connect(process, &QProcess::started, this, [this](){
-        setRunning(true);
-    });
+    // connect(process, &QProcess::started, this, [this](){
+    //     setRunning(true);
+    // });
 
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this](int exitCode, QProcess::ExitStatus exitStatus){
-        setRunning(false);
-        setReady(false);
-    });
+    // connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this](int exitCode, QProcess::ExitStatus exitStatus){
+    //     setRunning(false);
+    //     setReady(false);
+    // });
 
-    connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error){
-        qWarning() << "\033[31m" << "Error occurred:" << error << "\033[39m";
-    });
+    // connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error){
+    //     qWarning() << "\033[31m" << "Error occurred:" << error << "\033[39m";
+    // });
 
-    connect(process, &QProcess::readyReadStandardOutput, this, [this](){
-        QByteArray data = process->readAllStandardOutput();
-        if (data.contains("Server started")) setReady(true);
-        qInfo() << "\033[33m" << data.toStdString().c_str() << "\033[39m";
-    });
+    // connect(process, &QProcess::readyReadStandardOutput, this, [this](){
+    //     QByteArray data = process->readAllStandardOutput();
+    //     if (data.contains("Server started")) setReady(true);
+    //     qInfo() << "\033[33m" << data.toStdString().c_str() << "\033[39m";
+    // });
 
-    QFileSystemWatcher *watcher = new QFileSystemWatcher(this);
+    // QFileSystemWatcher *watcher = new QFileSystemWatcher(this);
 
-    connect(watcher, &QFileSystemWatcher::fileChanged, this, [=](QString path) {
-        qDebug() << "\033[32m" << "File changed:" << path  << "\033[39m";
+    // connect(watcher, &QFileSystemWatcher::fileChanged, this, [=](QString path) {
+    //     qDebug() << "\033[32m" << "File changed:" << path  << "\033[39m";
 
-        if (m_running)
-            restart();
-        watcher->addPath(path);
-    });
+    //     if (m_running)
+    //         restart();
+    //     watcher->addPath(path);
+    // });
 
-    QDirIterator it(QString("C:/Users/enokas/Documents/ts-pb-hooks-starter/dist"),
-                    QStringList() << "*.js",
-                    QDir::Files,
-                    QDirIterator::Subdirectories);
-    // while (it.hasNext()) {
-    //     watcher->addPath(it.next());
-    // }
-    watcher->addPath("C:/Users/enokas/Documents/ts-pb-hooks-starter/dist/index.pb.js");
+    // QDirIterator it(QString("C:/Users/enokas/Documents/ts-pb-hooks-starter/dist"),
+    //                 QStringList() << "*.js",
+    //                 QDir::Files,
+    //                 QDirIterator::Subdirectories);
+    // // while (it.hasNext()) {
+    // //     watcher->addPath(it.next());
+    // // }
+    // watcher->addPath("C:/Users/enokas/Documents/ts-pb-hooks-starter/dist/index.pb.js");
 
 }
 
 PocketBaseCollectionPromise * PocketBaseServer::start()
 {
 
-    stopProcess();
+    // stopProcess();
 
     PocketBaseCollectionPromise * promise = new PocketBaseCollectionPromise(this);
-    QStringList args;
-    QString hooksPath = "C:/Users/enokas/Documents/ts-pb-hooks-starter/dist";
-    // QDir::currentPath() + "/../server_data/pb_hooks";
+    // QStringList args;
+    // QString hooksPath = "C:/Users/enokas/Documents/ts-pb-hooks-starter/dist";
+    // // QDir::currentPath() + "/../server_data/pb_hooks";
 
-    args << "serve" << "--http" << m_address + ":" + QString::number(m_port) << "--dir" << m_dataFolder << "--publicDir" << m_publicFolder << "--hooksDir" << hooksPath;
-    if (m_devMode) args << "--dev";
-    qInfo() << "Starting server with args:" << m_binaryPath << args;
+    // args << "serve" << "--http" << m_address + ":" + QString::number(m_port) << "--dir" << m_dataFolder << "--publicDir" << m_publicFolder << "--hooksDir" << hooksPath;
+    // if (m_devMode) args << "--dev";
+    // qInfo() << "Starting server with args:" << m_binaryPath << args;
 
-    process->start(m_binaryPath, args);
-    process->waitForStarted();
+    // process->start(m_binaryPath, args);
+    // process->waitForStarted();
 
-    promise->callThen({});
+    // promise->callThen({});
     return promise;
 }
 
 PocketBaseCollectionPromise * PocketBaseServer::stop()
 {
-    stopProcess();
+    // stopProcess();
     PocketBaseCollectionPromise * promise = new PocketBaseCollectionPromise(this); 
-    process->terminate();
-    process->waitForFinished();
-    promise->callThen({});
+    // process->terminate();
+    // process->waitForFinished();
+    // promise->callThen({});
     return promise;
 }
 
 qint64 PocketBaseServer::isRunning() // return pid when running
 {
-    QProcess p;
-    QString binaryName = "bumas.exe";
-    QStringList args;
-    args << "/FI" << "IMAGENAME eq " + binaryName;
-    p.start("tasklist", args);
-    p.waitForFinished();
-    QString output = p.readAllStandardOutput();
-    if (output.contains(binaryName)) {
-        QStringList lines = output.split("\n");
-        for (QString line : lines) {
-            if (line.contains(binaryName)) {
-                QString pid = line.split(QRegularExpression("\\s+"))[1];
-                return pid.toLongLong();
-            }
-        }
-    }
+    // QProcess p;
+    // QString binaryName = "bumas.exe";
+    // QStringList args;
+    // args << "/FI" << "IMAGENAME eq " + binaryName;
+    // p.start("tasklist", args);
+    // p.waitForFinished();
+    // QString output = p.readAllStandardOutput();
+    // if (output.contains(binaryName)) {
+    //     QStringList lines = output.split("\n");
+    //     for (QString line : lines) {
+    //         if (line.contains(binaryName)) {
+    //             QString pid = line.split(QRegularExpression("\\s+"))[1];
+    //             return pid.toLongLong();
+    //         }
+    //     }
+    // }
 
     return -1;
 }
 
 void PocketBaseServer::stopProcess()
 {
-    QStringList args;
-    args << "/F" << "/IM" << m_binaryPath.split("/").last();
+    // QStringList args;
+    // args << "/F" << "/IM" << m_binaryPath.split("/").last();
 
-    QProcess p;
-    p.start("taskkill", args);
-    p.waitForFinished();
+    // QProcess p;
+    // p.start("taskkill", args);
+    // p.waitForFinished();
 }
 
 
