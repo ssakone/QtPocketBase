@@ -8,13 +8,12 @@
 #include <QObject>
 #include <QRandomGenerator>
 #include <QSettings>
-#include <QSharedPointer>
 
 class PocketBaseClient : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString apiUrl READ apiUrl WRITE setApiUrl NOTIFY apiUrlChanged FINAL)
-    Q_PROPERTY(QList<PocketBaseCollection *> *collectionList READ collectionList WRITE setCollectionList NOTIFY collectionListChanged FINAL)
+    Q_PROPERTY(QMap<QString, PocketBaseCollection*> collectionMap READ collectionMap WRITE setCollectionMap NOTIFY collectionMapChanged FINAL)
     Q_PROPERTY(bool connected READ connected WRITE setConnected NOTIFY connectedChanged FINAL)
     Q_PROPERTY(bool healthy READ healthy WRITE setHealthy NOTIFY healthyChanged FINAL)
     Q_PROPERTY(QString authToken READ authToken NOTIFY authTokenChanged FINAL)
@@ -50,8 +49,8 @@ public:
     QString apiUrl() const;
     void setApiUrl(const QString &newApiUrl);
 
-    void setCollectionList(QList<PocketBaseCollection *> *newCollectionList);
-    QList<PocketBaseCollection *> *collectionList() const;
+    void setCollectionMap(const QMap<QString, PocketBaseCollection *>& newCollectionMap);
+    QMap<QString, PocketBaseCollection *> collectionMap() const;
 
     QString authToken() const;
     void setAuthToken(const QString &newAuthToken);
@@ -69,7 +68,7 @@ signals:
 
     void collectionChanged();
 
-    void collectionListChanged();
+    void collectionMapChanged();
 
     void authTokenChanged();
 
@@ -85,8 +84,7 @@ private:
 
     CollectionSubscriber *subscriber;
     QSettings *settings;
-    QList<PocketBaseCollection *> *m_collectionList = nullptr;
-    QMap<QString, QSharedPointer<PocketBaseCollection>> m_collectionMap;
+    QMap<QString, PocketBaseCollection*> m_collectionMap;
     QString m_authToken;
     bool m_connected;
     bool m_healthy = false;

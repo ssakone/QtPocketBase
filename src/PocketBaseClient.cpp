@@ -24,7 +24,7 @@ void PocketBaseClient::addCollection(PocketBaseCollection *collection)
 {
     request.setRoute("/collections");
 
-    m_collectionList->append(collection);
+    // m_collectionList.append(collection);
 }
 
 PocketBaseCollectionPromise *PocketBaseClient::updateCollection(QString collectionId, PocketBaseCollection *updateCollection)
@@ -106,7 +106,7 @@ PocketBaseCollection *PocketBaseClient::collection(const QString &collectionName
     auto it = m_collectionMap.find(collectionName);
     if (it != m_collectionMap.end())
     {
-        return it.value().data();
+        return it.value();
     }
 
     PocketBaseCollection *newCollection = new PocketBaseCollection(this);
@@ -197,17 +197,17 @@ void PocketBaseClient::setApiUrl(const QString &newApiUrl)
     emit apiUrlChanged();
 }
 
-void PocketBaseClient::setCollectionList(QList<PocketBaseCollection *> *newCollectionList)
+void PocketBaseClient::setCollectionMap(const QMap<QString, PocketBaseCollection *> &newCollectionMap)
 {
-    if (m_collectionList == newCollectionList)
-        return;
-    m_collectionList = newCollectionList;
-    emit collectionListChanged();
+    // if (m_collectionList == newCollectionList)
+    //     return;
+    m_collectionMap = newCollectionMap;
+    emit collectionMapChanged();
 }
 
-QList<PocketBaseCollection *> *PocketBaseClient::collectionList() const
+QMap<QString, PocketBaseCollection *> PocketBaseClient::collectionMap() const
 {
-    return m_collectionList;
+    return m_collectionMap;
 }
 
 QString PocketBaseClient::authToken() const
