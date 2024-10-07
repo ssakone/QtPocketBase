@@ -20,7 +20,7 @@ PocketBaseServer::PocketBaseServer(QObject *parent)
             setReady(false);
         });
 
-        connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error){
+        connect(process, &QProcess::errorOccurred, this, [](QProcess::ProcessError error){
             qWarning() << "\033[31m" << "Error occurred:" << error << "\033[39m";
         });
 

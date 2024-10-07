@@ -13,17 +13,16 @@ PocketUtility::PocketUtility(QObject *parent)
     : QObject{parent}
 {}
 
-QJsonObject* PocketUtility::jsvalueToJsonObject(QJSValue value, QJsonObject *obj)
+QJsonObject PocketUtility::jsvalueToJsonObject(QJSValue value)
 {
     // qDebug() << value.toVariant().toJsonObject();
-    if (!obj)
-        obj = new QJsonObject();
+    QJsonObject obj;
     if (value.isUndefined() || value.isNull())
         return obj;
     QJsonObject optionsObj = value.toVariant().toJsonObject();
     QStringList keys = optionsObj.keys();
     for (int i = 0; i < keys.size(); i++) {
-        obj->insert(keys[i], optionsObj.value(keys[i]).toString());
+        obj.insert(keys[i], optionsObj.value(keys[i]).toString());
     }
     return obj;
 }
@@ -91,6 +90,8 @@ void PocketUtility::jsonFilesToFormData(QHttpMultiPart *multiPart, QJsonObject &
             {
                 filePart.setBodyDevice(file);
                 file->setParent(multiPart);
+            } else {
+                delete file;
             }
 
             multiPart->append(filePart);

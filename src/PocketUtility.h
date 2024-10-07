@@ -13,7 +13,7 @@ public:
     explicit PocketUtility(QObject *parent = nullptr);
 
 
-    static QJsonObject* jsvalueToJsonObject( QJSValue value, QJsonObject *obj = {});
+    static QJsonObject jsvalueToJsonObject(QJSValue value);
 
     static void jsonToFormData(QHttpMultiPart *multiPart, QJsonObject &dataObject);
     static void jsonFilesToFormData(QHttpMultiPart *multiPart, QJsonObject &filesObject, bool removing = false);

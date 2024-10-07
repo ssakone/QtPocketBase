@@ -34,7 +34,7 @@ QString CollectionSubscriber::subscribe(const QString topic, const QJSValue call
     {
         subscriptionList.append(topic);
         if (m_connected)
-            sub(topic);            
+            sub(topic);
     }
 
     return id;
@@ -70,7 +70,7 @@ void CollectionSubscriber::connect()
     // manager->setTransferTimeout(2000);
     QNetworkReply *reply = manager->get(subscriptionRequest);
 
-    QObject::connect(reply, &QNetworkReply::readyRead, [=](){
+    QObject::connect(reply, &QNetworkReply::readyRead, this, [=](){
         QString data = reply->readAll();
 
 
@@ -105,13 +105,13 @@ void CollectionSubscriber::connect()
         }
     });
 
-    QObject::connect(reply, &QNetworkReply::errorOccurred, [=]() {
+    QObject::connect(reply, &QNetworkReply::errorOccurred, [reply]() {
         QString data = reply->readAll();
         // qDebug() << "Error: " << data;
-        delete reply;
     });
 
-    QObject::connect(reply, &QNetworkReply::finished, [=](){
+    QObject::connect(reply, &QNetworkReply::finished, this, [=](){
+        reply->deleteLater();
         connect();
     });
 }
@@ -140,7 +140,7 @@ void CollectionSubscriber::sub(QString topic, bool all)
     QJsonDocument doc(json);
     // qDebug () << "Sending subscription request" << doc.toJson();
     QNetworkReply *subReply = manager->post(request, doc.toJson());
-    QObject::connect(subReply, &QNetworkReply::finished, [=](){
+    QObject::connect(subReply, &QNetworkReply::finished, this, [=](){
         int statusCode = subReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         QString data = subReply->readAll();
         if (statusCode != 204)
