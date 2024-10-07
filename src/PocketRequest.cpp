@@ -27,8 +27,8 @@ PocketBaseCollectionPromise *PocketRequest::getList(int page, int perPage, QJson
 
 PocketBaseCollectionPromise *PocketRequest::create(QJSValue data, QJsonObject options)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
-    return makeRequest(getRequest(getRequestParams(options), true), HttpMethod::POST, QJsonDocument(*obj).toJson());
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(data);
+    return makeRequest(getRequest(getRequestParams(options), true), HttpMethod::POST, QJsonDocument(obj).toJson());
 }
 
 PocketBaseCollectionPromise *PocketRequest::create(QJsonObject data, QJsonObject options)
@@ -38,12 +38,12 @@ PocketBaseCollectionPromise *PocketRequest::create(QJsonObject data, QJsonObject
 
 PocketBaseCollectionPromise *PocketRequest::createWithFile(QJSValue data, QJSValue files, QJsonObject options)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
+    QJsonObject obj = PocketUtility::jsvalueToJsonObject(data);
     QJsonObject fobj = files.toVariant().toJsonObject();
 
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
-    PocketUtility::jsonToFormData(multiPart, *obj);
+    PocketUtility::jsonToFormData(multiPart, obj);
     PocketUtility::jsonFilesToFormData(multiPart, fobj);
     QNetworkRequest request = getRequest(getRequestParams(options), false);
     return makeRequest(&request, HttpMethod::POST, multiPart);
@@ -51,8 +51,8 @@ PocketBaseCollectionPromise *PocketRequest::createWithFile(QJSValue data, QJSVal
 
 PocketBaseCollectionPromise *PocketRequest::update(QString id, QJSValue data, QJsonObject options)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
-    return makeRequest(getRequest(getRequestParams(options), true, "/" + id), HttpMethod::PATCH, QJsonDocument(*obj).toJson());
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(data);
+    return makeRequest(getRequest(getRequestParams(options), true, "/" + id), HttpMethod::PATCH, QJsonDocument(obj).toJson());
 }
 
 PocketBaseCollectionPromise *PocketRequest::update(QString id, QJsonObject data, QJsonObject options)
@@ -62,12 +62,12 @@ PocketBaseCollectionPromise *PocketRequest::update(QString id, QJsonObject data,
 
 PocketBaseCollectionPromise *PocketRequest::updateWithFile(QString id, QJSValue data, QJSValue files, QJsonObject options)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
+    QJsonObject obj = PocketUtility::jsvalueToJsonObject(data);
     QJsonObject fobj = files.toVariant().toJsonObject();
 
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
-    PocketUtility::jsonToFormData(multiPart, *obj);
+    PocketUtility::jsonToFormData(multiPart, obj);
     PocketUtility::jsonFilesToFormData(multiPart, fobj);
 
     multiPart->dumpObjectTree();
@@ -106,30 +106,30 @@ PocketBaseCollectionPromise *PocketRequest::authRefresh()
 
 PocketBaseCollectionPromise *PocketRequest::HttpGet(QString path, QJSValue options, bool other)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(options);
-    return makeRequest(getRequest(getRequestParams(*obj), false, path, true, other), HttpMethod::GET);
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(options);
+    return makeRequest(getRequest(getRequestParams(obj), false, path, true, other), HttpMethod::GET);
 }
 
 PocketBaseCollectionPromise *PocketRequest::HttpPostFile(QString path, QJSValue data, QJSValue files, QJSValue options, bool other)
 {
-    QJsonObject *op = PocketUtility::jsvalueToJsonObject(options);
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
+    const QJsonObject& op = PocketUtility::jsvalueToJsonObject(options);
+    QJsonObject obj = PocketUtility::jsvalueToJsonObject(data);
     QJsonObject fobj = files.toVariant().toJsonObject();
 
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
-    PocketUtility::jsonToFormData(multiPart, *obj);
+    PocketUtility::jsonToFormData(multiPart, obj);
     PocketUtility::jsonFilesToFormData(multiPart, fobj);
-    QNetworkRequest request = getRequest(getRequestParams(*op), true, path, true, other);
+    QNetworkRequest request = getRequest(getRequestParams(op), true, path, true, other);
     return makeRequest(&request, HttpMethod::POST, multiPart);
 
 }
 
 PocketBaseCollectionPromise *PocketRequest::HttpPost(QString path, QJSValue data, QJSValue options, bool other)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(options);
-    QJsonObject *datas = PocketUtility::jsvalueToJsonObject(data);
-    return makeRequest(getRequest(getRequestParams(*obj), true, path, true, other), HttpMethod::POST, QJsonDocument(*datas).toJson());
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(options);
+    const QJsonObject& datas = PocketUtility::jsvalueToJsonObject(data);
+    return makeRequest(getRequest(getRequestParams(obj), true, path, true, other), HttpMethod::POST, QJsonDocument(datas).toJson());
 }
 
 PocketBaseCollectionPromise *PocketRequest::HttpPost(QString path, QJsonObject datas, QJsonObject obj)
@@ -139,7 +139,7 @@ PocketBaseCollectionPromise *PocketRequest::HttpPost(QString path, QJsonObject d
 
 PocketBaseCollectionPromise *PocketRequest::HttpPut(QString path, QJSValue data, QJSValue options)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(options);
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(options);
     QJsonObject datas = data.toVariant().toJsonObject();
     return makeRequest(getRequest(QUrlQuery(), true, path, true), HttpMethod::PUT, QJsonDocument(datas).toJson());
 }
@@ -151,15 +151,15 @@ PocketBaseCollectionPromise *PocketRequest::HttpPut(QString path, QJsonObject da
 
 PocketBaseCollectionPromise *PocketRequest::HttpPatch(QString path, QJSValue data, QJSValue options)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(options);
-    QJsonObject *datas = PocketUtility::jsvalueToJsonObject(data);
-    return makeRequest(getRequest(getRequestParams(*obj), true, path, true), HttpMethod::PATCH, QJsonDocument(*datas).toJson());
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(options);
+    const QJsonObject& datas = PocketUtility::jsvalueToJsonObject(data);
+    return makeRequest(getRequest(getRequestParams(obj), true, path, true), HttpMethod::PATCH, QJsonDocument(datas).toJson());
 }
 
 PocketBaseCollectionPromise *PocketRequest::HttpDelete(QString path, QJSValue options)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(options);
-    return makeRequest(getRequest(getRequestParams(*obj), false, path, true, true), HttpMethod::DELETE);
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(options);
+    return makeRequest(getRequest(getRequestParams(obj), false, path, true, true), HttpMethod::DELETE);
 }
 
 PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request, HttpMethod method)
@@ -170,7 +170,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
 
     reply = manager->sendCustomRequest(request, methodToString(method));
 
-    connect(reply, &QNetworkReply::finished, [=]()
+    connect(reply, &QNetworkReply::finished, promise, [=]()
             {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
@@ -183,7 +183,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
         }
     });
 
-    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error)
+    connect(reply, &QNetworkReply::errorOccurred, promise, [=](QNetworkReply::NetworkError error)
             {
         if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError) {
             QJsonObject errorJson;
@@ -203,7 +203,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
     QNetworkReply *reply;
 
     reply = manager->sendCustomRequest(request, methodToString(method), data);
-    connect(reply, &QNetworkReply::finished, [reply, promise, this]()
+    connect(reply, &QNetworkReply::finished, promise, [reply, promise]()
             {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
@@ -217,7 +217,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
         }
     });
 
-    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error)
+    connect(reply, &QNetworkReply::errorOccurred, promise, [=](QNetworkReply::NetworkError error)
             {
         if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError) {
             QJsonObject errorJson;
@@ -238,7 +238,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest *request
 
     reply = manager->sendCustomRequest(*request, methodToString(method), multipart);
 
-    connect(reply, &QNetworkReply::finished, [=]()
+    connect(reply, &QNetworkReply::finished, promise, [=]()
             {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
@@ -251,7 +251,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest *request
         }
     });
 
-    connect(reply, &QNetworkReply::errorOccurred, [=](QNetworkReply::NetworkError error)
+    connect(reply, &QNetworkReply::errorOccurred, promise, [=](QNetworkReply::NetworkError error)
             {
                 if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError)
                 {
@@ -264,7 +264,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest *request
 
     connect(
         reply, &QNetworkReply::uploadProgress,
-        [promise](qint64 bytesSent, qint64 bytesTotal)
+        promise, [promise](qint64 bytesSent, qint64 bytesTotal)
         {
             promise->callProgress(QJSValueList{QString::number(bytesSent).toInt(), QString::number(bytesTotal).toInt()});
         });
@@ -276,64 +276,64 @@ PocketBaseCollectionPromise *PocketRequest::get(QString url, QJSValue headers)
 {
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    QJsonObject *header = PocketUtility::jsvalueToJsonObject(headers);
+    const QJsonObject& header = PocketUtility::jsvalueToJsonObject(headers);
     request.setRawHeader("Accept", "application/json");
     request.setRawHeader("Content-Type", "application/json");
-    request.setRawHeader("Authorization", header->value("Authorization").toString().toUtf8());
+    request.setRawHeader("Authorization", header.value("Authorization").toString().toUtf8());
 
     return makeRequest(request, HttpMethod::GET);
 }
 
 PocketBaseCollectionPromise *PocketRequest::post(QString url, QJSValue data, QJSValue headers)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(data);
     QNetworkRequest request= getRequest(QUrlQuery(), true, url, true, true);
-    QJsonObject *header = PocketUtility::jsvalueToJsonObject(headers);
+    const QJsonObject& header = PocketUtility::jsvalueToJsonObject(headers);
     request.setRawHeader("Accept", "application/json");
     request.setRawHeader("Content-Type", "application/json");
-    request.setRawHeader("Authorization", header->value("Authorization").toString().toUtf8());
-    return makeRequest(request, HttpMethod::POST, QJsonDocument(*obj).toJson());
+    request.setRawHeader("Authorization", header.value("Authorization").toString().toUtf8());
+    return makeRequest(request, HttpMethod::POST, QJsonDocument(obj).toJson());
 }
 
 PocketBaseCollectionPromise *PocketRequest::put(QString url, QJSValue data, QJSValue headers)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
-    return makeRequest(getRequest(QUrlQuery(), true, url, true, true), HttpMethod::PUT, QJsonDocument(*obj).toJson());
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(data);
+    return makeRequest(getRequest(QUrlQuery(), true, url, true, true), HttpMethod::PUT, QJsonDocument(obj).toJson());
 }
 
 PocketBaseCollectionPromise *PocketRequest::postFile(QString url, QJSValue data, QJSValue files, QJSValue headers)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
+    QJsonObject obj = PocketUtility::jsvalueToJsonObject(data);
     QJsonObject fobj = files.toVariant().toJsonObject();
-    QJsonObject *header = PocketUtility::jsvalueToJsonObject(headers);
+    const QJsonObject& header = PocketUtility::jsvalueToJsonObject(headers);
 
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
-    PocketUtility::jsonToFormData(multiPart, *obj);
+    PocketUtility::jsonToFormData(multiPart, obj);
     PocketUtility::jsonFilesToFormData(multiPart, fobj);
 
     QNetworkRequest request;
     request.setUrl(QUrl(url));
     request.setRawHeader("Accept", "application/json");
-    request.setRawHeader("Authorization", header->value("Authorization").toString().toUtf8());
+    request.setRawHeader("Authorization", header.value("Authorization").toString().toUtf8());
     return makeRequest(&request, HttpMethod::POST, multiPart);
 }
 
 PocketBaseCollectionPromise *PocketRequest::putFile(QString url, QJSValue data, QJSValue files, QJSValue headers)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
+    QJsonObject obj = PocketUtility::jsvalueToJsonObject(data);
     QJsonObject fobj = files.toVariant().toJsonObject();
-    QJsonObject *header = PocketUtility::jsvalueToJsonObject(headers);
+    const QJsonObject& header = PocketUtility::jsvalueToJsonObject(headers);
 
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
-    PocketUtility::jsonToFormData(multiPart, *obj);
+    PocketUtility::jsonToFormData(multiPart, obj);
     PocketUtility::jsonFilesToFormData(multiPart, fobj);
 
     QNetworkRequest request;
     request.setUrl(QUrl(url));
     request.setRawHeader("Accept", "application/json");
-    request.setRawHeader("Authorization", header->value("Authorization").toString().toUtf8());
+    request.setRawHeader("Authorization", header.value("Authorization").toString().toUtf8());
     return makeRequest(&request, HttpMethod::PATCH, multiPart);
 }
 
@@ -342,11 +342,11 @@ PocketBaseCollectionPromise *PocketRequest::removeFile(QString url, QJSValue fil
     QJsonObject fobj = files.toVariant().toJsonObject();
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     PocketUtility::jsonFilesToFormData(multiPart, fobj, true);
-    QJsonObject *header = PocketUtility::jsvalueToJsonObject(headers);
+    const QJsonObject& header = PocketUtility::jsvalueToJsonObject(headers);
 
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    request.setRawHeader("Authorization", header->value("Authorization").toString().toUtf8());
+    request.setRawHeader("Authorization", header.value("Authorization").toString().toUtf8());
     request.setRawHeader("Accept", "application/json");
 
     return makeRequest(&request, HttpMethod::PATCH, multiPart);
@@ -354,14 +354,14 @@ PocketBaseCollectionPromise *PocketRequest::removeFile(QString url, QJSValue fil
 
 PocketBaseCollectionPromise *PocketRequest::patch(QString url, QJSValue data, QJSValue headers)
 {
-    QJsonObject *obj = PocketUtility::jsvalueToJsonObject(data);
+    const QJsonObject& obj = PocketUtility::jsvalueToJsonObject(data);
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    QJsonObject *header = PocketUtility::jsvalueToJsonObject(headers);
+    const QJsonObject& header = PocketUtility::jsvalueToJsonObject(headers);
     request.setRawHeader("Accept", "application/json");
     request.setRawHeader("Content-Type", "application/json");
-    request.setRawHeader("Authorization", header->value("Authorization").toString().toUtf8());
-    return makeRequest(request, HttpMethod::PATCH, QJsonDocument(*obj).toJson());
+    request.setRawHeader("Authorization", header.value("Authorization").toString().toUtf8());
+    return makeRequest(request, HttpMethod::PATCH, QJsonDocument(obj).toJson());
 }
 
 PocketBaseCollectionPromise *PocketRequest::del(QString url, QJSValue headers)
@@ -451,10 +451,10 @@ PocketBaseCollectionPromise *PocketRequest::downloadFile(const QString &url, con
 {
     PocketBaseCollectionPromise *promise = new PocketBaseCollectionPromise(this);
 
-    QJsonObject *header = PocketUtility::jsvalueToJsonObject(headers);
+    const QJsonObject& header = PocketUtility::jsvalueToJsonObject(headers);
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    request.setRawHeader("Authorization", header->value("Authorization").toString().toUtf8());
+    request.setRawHeader("Authorization", header.value("Authorization").toString().toUtf8());
 
     QNetworkReply *reply = manager->get(request);
 
@@ -493,7 +493,7 @@ PocketBaseCollectionPromise *PocketRequest::downloadFile(const QString &url, con
         }
     });
 
-    connect(reply, &QNetworkReply::finished, [=]() {
+    connect(reply, &QNetworkReply::finished, promise, [=]() {
         if (file->isOpen()) {
             file->close();
         }
@@ -511,7 +511,7 @@ PocketBaseCollectionPromise *PocketRequest::downloadFile(const QString &url, con
         reply->deleteLater();
     });
 
-    connect(reply, &QNetworkReply::downloadProgress, [promise](qint64 bytesReceived, qint64 bytesTotal) {
+    connect(reply, &QNetworkReply::downloadProgress, promise, [promise](qint64 bytesReceived, qint64 bytesTotal) {
         promise->callProgress(QJSValueList{QString::number(bytesReceived).toInt(), QString::number(bytesTotal).toInt()});
     });
 

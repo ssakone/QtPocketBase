@@ -13,6 +13,9 @@ public:
 
     static void setToken(QString token);
     static void setApiUrl(QString apiUrl);
+
+private:
+    static PocketBaseSettings s_self;
 };
 
 #endif // POCKETBASESETTINGS_H
