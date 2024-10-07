@@ -6,7 +6,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+enable_testing()
+add_subdirectory(googletest)
 find_package(Qt6 COMPONENTS Network Core Quick REQUIRED)
+
 
 qt6_add_library(PocketBase STATIC)
 qt6_add_qml_module(PocketBase
@@ -37,4 +40,10 @@ set_target_properties(PocketBase PROPERTIES
     PUBLIC_HEADER "src/PocketBase.hpp"
 )
 
+# Add /Zc:__cplusplus option for MSVC
+if (MSVC)
+    add_compile_options(/Zc:__cplusplus)
+endif()
+
 target_include_directories(PocketBase PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+add_subdirectory(test)
