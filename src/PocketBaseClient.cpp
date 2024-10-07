@@ -6,18 +6,15 @@ PocketBaseClient::PocketBaseClient(QObject *parent)
 {
     subscriber = new CollectionSubscriber(this);
 
-    QObject::connect(subscriber, &CollectionSubscriber::connetionEstablished, this, [this](){
-        setConnected(true);
-    });
+    QObject::connect(subscriber, &CollectionSubscriber::connetionEstablished, this, [this]()
+                     { setConnected(true); });
 
-    QObject::connect(subscriber, &CollectionSubscriber::connectedChanged, this, [this](){
-        setConnected(subscriber->connected());
-    });
+    QObject::connect(subscriber, &CollectionSubscriber::connectedChanged, this, [this]()
+                     { setConnected(subscriber->connected()); });
 
     QTimer *timer = new QTimer(this);
-    QObject::connect(timer, &QTimer::timeout, this, [=]() {
-        isHealthy();
-    });
+    QObject::connect(timer, &QTimer::timeout, this, [=]()
+                     { isHealthy(); });
 
     timer->start(800);
     isHealthy();
@@ -69,7 +66,8 @@ PocketBaseCollectionPromise *PocketBaseClient::update(QString collectionName, QS
 {
     QJsonObject allOptions;
     QJSValueIterator it(options);
-    while (it.hasNext()) {
+    while (it.hasNext())
+    {
         it.next();
         allOptions.insert(it.name(), it.value().toString());
     }
@@ -80,59 +78,52 @@ PocketBaseCollectionPromise *PocketBaseClient::update(QString collectionName, QS
 
 PocketBaseCollectionPromise *PocketBaseClient::isHealthy()
 {
-    if (m_apiUrl.isEmpty()) {
+    if (m_apiUrl.isEmpty())
+    {
         setHealthy(false);
         return nullptr;
     }
     auto promise = request.HttpGet("/api/health");
-    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [this](auto value){
-
-        if (previousHealthState == false) {
-            // subscriber->restart();
-            // subscriber
-            subscriber->connect();
-            previousHealthState = true;
-        }
-        setHealthy(true);
-
-    });
-    QObject::connect(promise, &PocketBaseCollectionPromise::onError, this, [this](auto value){
+    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [this](auto value)
+                     {
+                         if (previousHealthState == false)
+                         {
+                             // subscriber->restart();
+                             // subscriber
+                             subscriber->connect();
+                             previousHealthState = true;
+                         }
+                         setHealthy(true); });
+    QObject::connect(promise, &PocketBaseCollectionPromise::onError, this, [this](auto value)
+                     {
         setHealthy(false);
-        previousHealthState = false;
-    });
+        previousHealthState = false; });
     return promise;
 }
 
-PocketBaseCollection *PocketBaseClient::collection(QString collectionName)
+PocketBaseCollection *PocketBaseClient::collection(const QString &collectionName)
 {
-    if (m_collectionList == nullptr || m_collectionList->isEmpty()) goto newCollection;
-
-    for (auto c : *m_collectionList) {
-        try {
-            if (c && c->name() == collectionName) {
-                return c;
-            }
-        } catch (std::exception e) {
-            qWarning() << e.what();
-            delete c;
-        }
+    auto it = m_collectionMap.find(collectionName);
+    if (it != m_collectionMap.end())
+    {
+        return it.value().data();
     }
 
-    newCollection:
-    PocketBaseCollection *newCollection = new PocketBaseCollection();
+    auto newCollection = QSharedPointer<PocketBaseCollection>::create(this);
     newCollection->setName(collectionName);
-    addCollection(newCollection);
-    return newCollection;
+    m_collectionMap.insert(collectionName, newCollection);
+
+    return newCollection.data();
 }
 
 PocketBaseCollectionPromise *PocketBaseClient::authAdminWithPassword(QString identity, QString password)
 {
     request.setRoute("/admins/auth-with-password");
     PocketBaseCollectionPromise *promise = request.authWithPassword(identity, password);
-    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, [=](QJSValueList response) {
+    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, [=](QJSValueList response)
+                     {
         QJsonObject data = QJsonDocument::fromJson(QByteArray::fromStdString(response.toList().at(0).toString().toStdString())).object();
-        setAuthToken(data.value("token").toString());
-    });
+        setAuthToken(data.value("token").toString()); });
     return promise;
 }
 
@@ -140,10 +131,10 @@ PocketBaseCollectionPromise *PocketBaseClient::authWithCollection(QString collec
 {
     request.setRoute("/collections/" + collectionName + "/auth-with-password");
     PocketBaseCollectionPromise *promise = request.authWithPassword(identity, password);
-    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, [=](QJSValueList response) {
+    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, [=](QJSValueList response)
+                     {
         QJsonObject data = QJsonDocument::fromJson(QByteArray::fromStdString(response.toList().at(0).toString().toStdString())).object();
-        setAuthToken(data.value("token").toString());
-    });
+        setAuthToken(data.value("token").toString()); });
     return promise;
 }
 
@@ -151,10 +142,10 @@ PocketBaseCollectionPromise *PocketBaseClient::authRefreshCollection(QString col
 {
     request.setRoute("/collections/" + collectionName + "/auth-refresh");
     PocketBaseCollectionPromise *promise = request.authRefresh();
-    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, [=](QJSValueList response) {
+    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, [=](QJSValueList response)
+                     {
         QJsonObject data = QJsonDocument::fromJson(QByteArray::fromStdString(response.toList().at(0).toString().toStdString())).object();
-        setAuthToken(data.value("token").toString());
-    });
+        setAuthToken(data.value("token").toString()); });
     return promise;
 }
 
@@ -189,7 +180,6 @@ void PocketBaseClient::unsubscribe(const QString id)
 {
     subscriber->unsubscribe(id);
 }
-
 
 QString PocketBaseClient::apiUrl() const
 {
@@ -266,5 +256,3 @@ bool PocketBaseClient::isAuth() const
 {
     return !m_authToken.isEmpty();
 }
-
-
