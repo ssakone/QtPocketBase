@@ -40,8 +40,9 @@ public:
     Q_INVOKABLE PocketBaseCollectionPromise *authWithPassword(QString identity, QString password);
     Q_INVOKABLE PocketBaseCollectionPromise *authRefresh();
 
-    Q_INVOKABLE PocketBaseCollectionPromise *HttpGet(QString path, QJSValue options = {});
-    Q_INVOKABLE PocketBaseCollectionPromise *HttpPost(QString path, QJSValue data, QJSValue options = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *HttpGet(QString path, QJSValue options = {}, bool other = false);
+    Q_INVOKABLE PocketBaseCollectionPromise *HttpPostFile(QString path, QJSValue data, QJSValue files, QJSValue options = {}, bool other = false);
+    Q_INVOKABLE PocketBaseCollectionPromise *HttpPost(QString path, QJSValue data, QJSValue options = {}, bool other = false);
     Q_INVOKABLE PocketBaseCollectionPromise *HttpPost(QString path, QJsonObject datas, QJsonObject obj);
     Q_INVOKABLE PocketBaseCollectionPromise *HttpPut(QString path, QJSValue data, QJSValue options = {});
     PocketBaseCollectionPromise *HttpPut(QString path, QJsonObject datas);
@@ -52,7 +53,20 @@ public:
     Q_INVOKABLE PocketBaseCollectionPromise *makeRequest(QNetworkRequest request, HttpMethod method, QByteArray data);
     Q_INVOKABLE PocketBaseCollectionPromise *makeRequest(QNetworkRequest *request, HttpMethod method, QHttpMultiPart *multiPart);
 
-    QNetworkRequest getRequest(QUrlQuery query, bool contentType = true, QString path = "", bool full = false);
+
+    Q_INVOKABLE PocketBaseCollectionPromise *get(QString url, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *post(QString url, QJSValue data, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *put(QString url, QJSValue data, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *postFile(QString url, QJSValue data, QJSValue files, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *putFile(QString url, QJSValue data, QJSValue files, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *removeFile(QString url, QJSValue files, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *patch(QString url, QJSValue data, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *del(QString url, QJSValue headers = {});
+    Q_INVOKABLE PocketBaseCollectionPromise *downloadFile(const QString &url, const QString &saveDir, QJSValue headers = {});
+
+
+
+    QNetworkRequest getRequest(QUrlQuery query, bool contentType = true, QString path = "", bool full = false, bool other = false);
     QUrlQuery getRequestParams(QJsonObject obj);
 
     void setRoute(const QString &newRoute);
@@ -65,5 +79,25 @@ private:
     QNetworkAccessManager *manager;
 
 };
+
+
+// PocketRequest.get("https://buma.pockethost.io/api/collections/articles/records").then(function (rs) {
+//     console.log(rs)
+// }).error(function (err) {
+//     console.log(err)
+// })
+// const data = {
+//     "name": "Sakone"
+// }
+
+// const file = {
+//     "photo": ["logo_a3dy_pcnemu_tQ75szBOlC.png"]
+// }
+
+// PocketRequest.removeFile("https://buma.pockethost.io/api/collections/test_table/records/whz0uooookm2eb6", file).then(function (rs) {
+//     console.log(rs)
+// }).error(function (err) {
+//     console.log(err)
+// })
 
 #endif // POCKETREQUEST_H

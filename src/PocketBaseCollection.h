@@ -3,8 +3,8 @@
 
 #include "PocketBaseCollectionPromise.h"
 #include "PocketBaseCollectionSchema.h"
-#include "PocketBaseSettings.h"
 #include "PocketRequest.h"
+#include "PocketBaseSettings.h"
 #include "qqmlintegration.h"
 #include <QObject>
 #include <QVariant>

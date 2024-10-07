@@ -8,114 +8,138 @@
 PocketBaseServer::PocketBaseServer(QObject *parent)
     : QObject{parent}
 {
-    // m_binaryPath = QDir::currentPath() + "/bumas.exe";
-    // process = new QProcess(this);
+    #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+        process = new QProcess(this);
 
-    // connect(process, &QProcess::started, this, [this](){
-    //     setRunning(true);
-    // });
+        connect(process, &QProcess::started, this, [this](){
+            setRunning(true);
+        });
 
-    // connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this](int exitCode, QProcess::ExitStatus exitStatus){
-    //     setRunning(false);
-    //     setReady(false);
-    // });
+        connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this](int exitCode, QProcess::ExitStatus exitStatus){
+            setRunning(false);
+            setReady(false);
+        });
 
-    // connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error){
-    //     qWarning() << "\033[31m" << "Error occurred:" << error << "\033[39m";
-    // });
+        connect(process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error){
+            qWarning() << "\033[31m" << "Error occurred:" << error << "\033[39m";
+        });
 
-    // connect(process, &QProcess::readyReadStandardOutput, this, [this](){
-    //     QByteArray data = process->readAllStandardOutput();
-    //     if (data.contains("Server started")) setReady(true);
-    //     qInfo() << "\033[33m" << data.toStdString().c_str() << "\033[39m";
-    // });
+        connect(process, &QProcess::readyReadStandardOutput, this, [this](){
+            QByteArray data = process->readAllStandardOutput();
+            if (data.contains("Server started")) setReady(true);
+            qInfo() << "\033[33m" << data.toStdString().c_str() << "\033[39m";
+        });
 
-    // QFileSystemWatcher *watcher = new QFileSystemWatcher(this);
-
-    // connect(watcher, &QFileSystemWatcher::fileChanged, this, [=](QString path) {
-    //     qDebug() << "\033[32m" << "File changed:" << path  << "\033[39m";
-
-    //     if (m_running)
-    //         restart();
-    //     watcher->addPath(path);
-    // });
-
-    // QDirIterator it(QString("C:/Users/enokas/Documents/ts-pb-hooks-starter/dist"),
-    //                 QStringList() << "*.js",
-    //                 QDir::Files,
-    //                 QDirIterator::Subdirectories);
-    // // while (it.hasNext()) {
-    // //     watcher->addPath(it.next());
-    // // }
-    // watcher->addPath("C:/Users/enokas/Documents/ts-pb-hooks-starter/dist/index.pb.js");
+    #endif
 
 }
 
-PocketBaseCollectionPromise * PocketBaseServer::start()
+bool PocketBaseServer::start()
 {
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+    stopProcess();
 
-    // stopProcess();
+    QStringList args;
+    QString hooksPath = m_hookFolder;
 
-    PocketBaseCollectionPromise * promise = new PocketBaseCollectionPromise(this);
-    // QStringList args;
-    // QString hooksPath = "C:/Users/enokas/Documents/ts-pb-hooks-starter/dist";
-    // // QDir::currentPath() + "/../server_data/pb_hooks";
+    args << "serve" << "--http"
+         << m_address + ":" + QString::number(m_port)
+         << "--dir" << m_dataFolder << "--publicDir"
+         << m_publicFolder << "--hooksDir"
+         << hooksPath << "--migrationsDir" << m_migrationDir;
+    if (m_devMode) args << "--dev";
 
-    // args << "serve" << "--http" << m_address + ":" + QString::number(m_port) << "--dir" << m_dataFolder << "--publicDir" << m_publicFolder << "--hooksDir" << hooksPath;
-    // if (m_devMode) args << "--dev";
-    // qInfo() << "Starting server with args:" << m_binaryPath << args;
+    qInfo() << "Starting server with args:" << m_binaryPath << args;
 
-    // process->start(m_binaryPath, args);
-    // process->waitForStarted();
+    process->start(m_binaryPath, args);
+    return  process->waitForStarted();
 
-    // promise->callThen({});
-    return promise;
+#elif defined(Q_OS_WASM) || defined(Q_OS_IOS)
+    return false;
+#else
+#error "Unsupported platform"
+#endif
 }
+
 
 PocketBaseCollectionPromise * PocketBaseServer::stop()
 {
-    // stopProcess();
-    PocketBaseCollectionPromise * promise = new PocketBaseCollectionPromise(this); 
-    // process->terminate();
-    // process->waitForFinished();
-    // promise->callThen({});
-    return promise;
+    #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+        stopProcess();
+        PocketBaseCollectionPromise * promise = new PocketBaseCollectionPromise(this);
+        process->terminate();
+        process->waitForFinished();
+        promise->callThen({});
+        return promise;
+    #elif defined(Q_OS_WASM) || defined(Q_OS_IOS)
+        PocketBaseCollectionPromise * promise = new PocketBaseCollectionPromise(this);
+        // Return promise without starting the process
+        return promise;
+
+    #else
+    #error "Unsupported platform"
+    #endif
 }
 
-qint64 PocketBaseServer::isRunning() // return pid when running
+qint64 PocketBaseServer::isRunning()
 {
-    // QProcess p;
-    // QString binaryName = "bumas.exe";
-    // QStringList args;
-    // args << "/FI" << "IMAGENAME eq " + binaryName;
-    // p.start("tasklist", args);
-    // p.waitForFinished();
-    // QString output = p.readAllStandardOutput();
-    // if (output.contains(binaryName)) {
-    //     QStringList lines = output.split("\n");
-    //     for (QString line : lines) {
-    //         if (line.contains(binaryName)) {
-    //             QString pid = line.split(QRegularExpression("\\s+"))[1];
-    //             return pid.toLongLong();
-    //         }
-    //     }
-    // }
+    #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+    #if defined(Q_OS_WIN)
+        QProcess p;
+        QString binaryName = "bumas.exe";
+        QStringList args;
+        args << "/FI" << "IMAGENAME eq " + binaryName;
+        p.start("tasklist", args);
+        p.waitForFinished();
+        QString output = p.readAllStandardOutput();
+        if (output.contains(binaryName)) {
+            QStringList lines = output.split("\n");
+            for (QString line : lines) {
+                if (line.contains(binaryName)) {
+                    QString pid = line.split(QRegularExpression("\\s+"))[1];
+                    return pid.toLongLong();
+                }
+            }
+        }
+    #else
+        QProcess p;
+        p.start("pgrep", QStringList() << m_binaryPath.split("/").last());
+        p.waitForFinished();
+        QString output = p.readAllStandardOutput();
+        if (!output.isEmpty()) {
+            return output.toLongLong();
+        }
+    #endif
+    #elif defined(Q_OS_WASM) || defined(Q_OS_IOS)
+    return -1;
+    #else
+    #error "Unsupported platform"
+    #endif
 
     return -1;
 }
 
 void PocketBaseServer::stopProcess()
 {
-    // QStringList args;
-    // args << "/F" << "/IM" << m_binaryPath.split("/").last();
+    #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+        #if defined(Q_OS_WIN)
+            QStringList args;
+            args << "/F" << "/IM" << m_binaryPath.split("/").last();
 
-    // QProcess p;
-    // p.start("taskkill", args);
-    // p.waitForFinished();
+            QProcess p;
+            p.start("taskkill", args);
+            p.waitForFinished();
+        #else
+            qint64 pid = isRunning();
+            if (pid != -1) {
+                QProcess::execute("kill", QStringList() << QString::number(pid));
+            }
+        #endif
+    #endif
 }
 
 
-PocketBaseCollectionPromise * PocketBaseServer::restart()
+bool PocketBaseServer::restart()
 {
     qDebug() << "Stopping Server";
     stop();
@@ -269,4 +293,17 @@ void PocketBaseServer::setDevMode(bool newDevMode)
         return;
     m_devMode = newDevMode;
     emit devModeChanged();
+}
+
+QString PocketBaseServer::migrationDir() const
+{
+    return m_migrationDir;
+}
+
+void PocketBaseServer::setMigrationDir(const QString &newMigrationDir)
+{
+    if (m_migrationDir == newMigrationDir)
+        return;
+    m_migrationDir = newMigrationDir;
+    emit migrationDirChanged();
 }

@@ -15,6 +15,11 @@ void registerPocketBaseType() {
     qmlRegisterType<PocketBaseCollectionSchema>("PocketBase", 1, 0, "CollectionSchema");
     qmlRegisterType<CollectionFileFieldOptions>("PocketBase", 1, 0, "FileFieldOptions");
     qmlRegisterType<CollectionTextFieldOptions>("PocketBase", 1, 0, "TextFieldOptions");
+    qmlRegisterSingletonType<PocketRequest>("PocketBase", 1, 0, "PocketRequest", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
+        Q_UNUSED(engine)
+        Q_UNUSED(scriptEngine)
+        return new PocketRequest();
+    });
 
     qmlRegisterType<CollectionSubscriber>("PocketBase", 1, 0, "Subscriber");
     qmlRegisterUncreatableType<CollectionFieldOptions>("PocketBase", 1, 0, "FieldOptions", "FieldOptions is an abstract class");

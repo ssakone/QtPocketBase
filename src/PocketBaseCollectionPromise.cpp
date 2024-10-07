@@ -1,4 +1,5 @@
 #include "PocketBaseCollectionPromise.h"
+#include <QtDebug>
 
 PocketBaseCollectionPromise::PocketBaseCollectionPromise(QObject *parent)
     : QObject{parent}
@@ -52,7 +53,18 @@ void PocketBaseCollectionPromise::callThen(QJSValueList args)
 {
     emit onThen(args);
     if (m_then.isCallable()) {
-        m_then.call(args);
+        if (args.length() > 0)
+        {
+            try {
+                m_then.call(args);
+            } catch (const std::exception &e) {
+                qWarning() << "Error in then callback" << e.what();
+            }
+
+        }
+        else {
+            m_then.call();
+        }
 
     }
     callFinally(args);
