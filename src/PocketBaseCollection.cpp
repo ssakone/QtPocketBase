@@ -3,12 +3,14 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJSValueList>
+#include "pocketnetworkmanager.h"
 
 PocketBaseCollection::PocketBaseCollection(QObject *parent)
     : QObject{parent}
 {
-    manager = new QNetworkAccessManager(this);
+    manager = PocketNetworkManager::instance();
     request = new PocketRequest(this);
+    viewRequest = new PocketRequest(this);
     request->setRoute("/collections/" + this->name() + "/records");
 }
 
@@ -60,16 +62,14 @@ PocketBaseCollectionPromise *PocketBaseCollection::deleteOne(QString id)
 
 PocketBaseCollectionPromise *PocketBaseCollection::getViewList(QString view, int page, int perPage, QJSValue options)
 {
-    PocketRequest *rq = new PocketRequest(this);
-    rq->setRoute("/collections/" + view + "/records");
-    return rq->getList(page, perPage, getOptions(options));
+    viewRequest->setRoute("/collections/" + view + "/records");
+    return viewRequest->getList(page, perPage, getOptions(options));
 }
 
 PocketBaseCollectionPromise *PocketBaseCollection::getViewOne(QString view, QString id, QJSValue options)
 {
-    PocketRequest *rq = new PocketRequest(this);
-    rq->setRoute("/collections/" + view + "/records");
-    return rq->getOne(id, getOptions(options));
+    viewRequest->setRoute("/collections/" + view + "/records");
+    return viewRequest->getOne(id, getOptions(options));
 }
 
 QString PocketBaseCollection::getFileUrl(QString fileId, QString fileName)
@@ -79,16 +79,16 @@ QString PocketBaseCollection::getFileUrl(QString fileId, QString fileName)
 
 PocketBaseCollectionPromise *PocketBaseCollection::send(QString path, QString method, QJSValue data, QJSValue options)
 {
-    PocketRequest *request = new PocketRequest(this);
+    viewRequest->setRoute("");
     switch (method.toStdString()[0]) {
     case 'G':
-        return request->HttpGet(path);
+        return viewRequest->HttpGet(path);
     case 'P':
-        return request->HttpPost(path, data.toVariant().toJsonObject(), getOptions(options));
+        return viewRequest->HttpPost(path, data.toVariant().toJsonObject(), getOptions(options));
     case 'D':
-        return request->HttpDelete(path);
+        return viewRequest->HttpDelete(path);
     case 'U':
-        return request->HttpPut(path, data, options);
+        return viewRequest->HttpPut(path, data, options);
     default:
         return nullptr;
     }

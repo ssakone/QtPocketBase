@@ -3,7 +3,6 @@
 
 #include "PocketBaseCollectionPromise.h"
 #include <QNetworkRequest>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonArray>
 #include <QJsonObject>

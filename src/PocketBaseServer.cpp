@@ -42,14 +42,15 @@ bool PocketBaseServer::start()
     QStringList args;
     QString hooksPath = m_hookFolder;
 
-    args << "serve" << "--http"
-         << m_address + ":" + QString::number(m_port)
-         << "--dir" << m_dataFolder << "--publicDir"
-         << m_publicFolder << "--hooksDir"
-         << hooksPath << "--migrationsDir" << m_migrationDir;
+    args << "serve"
+         << "--dir" << m_dataFolder
+         << "--hooksDir" << hooksPath
+         << "--migrationsDir" << m_migrationDir;
+    if (m_publicFolder != "") args << "--publicDir" << m_publicFolder;
     if (m_devMode) args << "--dev";
+    args << "--http" << m_address + ":" + QString::number(m_port);
 
-    qInfo() << "Starting server with args:" << m_binaryPath << args;
+    qInfo() << "Starting server with args:" << m_binaryPath << args.join(" ");
 
     process->start(m_binaryPath, args);
     return  process->waitForStarted();

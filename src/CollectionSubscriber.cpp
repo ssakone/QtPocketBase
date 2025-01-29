@@ -14,16 +14,19 @@ CollectionSubscriber::CollectionSubscriber(QObject *parent)
 
 QString CollectionSubscriber::subscribe(const QString topic, const QJSValue callback, QString id = "")
 {
-    if (id == "") {
+    if (id == "")
+    {
         id = QUuid::createUuid().toString();
     }
 
-    if (!callbacks.contains(topic)) {
+    if (!callbacks.contains(topic))
+    {
         callbacks.insert(topic, {id});
     }
 
     auto callbackList = callbacks[topic];
-    if (!callbackList.contains(id)) {
+    if (!callbackList.contains(id))
+    {
         callbackList.append(id);
         callbacks[topic] = callbackList;
     }
@@ -42,14 +45,17 @@ QString CollectionSubscriber::subscribe(const QString topic, const QJSValue call
 
 void CollectionSubscriber::unsubscribe(const QString id)
 {
-    for (auto topic : callbacks.keys()) {
+    for (auto topic : callbacks.keys())
+    {
         QStringList callbackList = callbacks[topic];
-        if (callbackList.contains(id)) {
+        if (callbackList.contains(id))
+        {
             callbackList.removeOne(id);
             callbacks[topic] = callbackList;
         }
 
-        if (callbackList.isEmpty()) {
+        if (callbackList.isEmpty())
+        {
             subscriptionList.removeOne(topic);
         }
     }
@@ -70,47 +76,89 @@ void CollectionSubscriber::connect()
     // manager->setTransferTimeout(2000);
     QNetworkReply *reply = manager->get(subscriptionRequest);
 
-    QObject::connect(reply, &QNetworkReply::readyRead, this, [=](){
+    QObject::connect(reply, &QNetworkReply::readyRead, this, [=]() {
         QString data = reply->readAll();
 
-
+        // If we see "clientId", parse out the ID if possible
         if (data.contains("clientId")) {
-            clientId = data.split("id:")[1].split("\n")[0];
+            // Safely split by "id:"
+            const QStringList idSplit = data.split("id:");
+            if (idSplit.size() > 1) {
+                const QStringList newLineSplit = idSplit[1].split("\n");
+                if (!newLineSplit.isEmpty()) {
+                    clientId = newLineSplit.first();
+                }
+            }
             setConnected(true);
-            // qDebug() << clientId;
-            // qDebug() << "connecting to subscription" << subscriptionList;
             sub("", true);
             emit connetionEstablished();
         } else {
+            // If not the clientId info, then we parse SSE "event:" lines
             QStringList parts = data.split("\n\n");
-            for (auto part : parts) {
-                if (part.isEmpty())
+            for (const QString &part : parts) {
+                if (part.isEmpty()) {
                     continue;
+                }
 
-                QString queryResponse = part.split("data:")[1];
-                QString event = part.split("event:")[1].split("\n")[0];
-                QStringList patterns = callbacks[event];
-                for (QString identifier : patterns) {
-                    QJSValue caller = identifiers[identifier];
-                    if (caller.isCallable())
-                        caller.call(QJSValueList{queryResponse});
-                    else {
-                        identifiers.remove(identifier);
-                        patterns.removeOne(identifier);
-                        callbacks[event] = patterns;
-                        qDebug() << "Callback not callable : " << caller.toString();
+                // 1) Safely parse the "event"
+                QString event;
+                {
+                    const QStringList eventSplit = part.split("event:");
+                    if (eventSplit.size() > 1) {
+                        // e.g. "event:xyz\n..."
+                        // That second piece might have more newlines
+                        const QStringList newLineSplit = eventSplit[1].split("\n");
+                        if (!newLineSplit.isEmpty()) {
+                            event = newLineSplit.first().trimmed();
+                        }
                     }
+                }
+
+                // 2) Safely parse the "data"
+                QString dataField;
+                {
+                    const QStringList dataSplit = part.split("data:");
+                    if (dataSplit.size() > 1) {
+                        dataField = dataSplit[1].trimmed();
+                    }
+                }
+
+                // If we couldn’t parse the "event" or "data", we skip
+                if (event.isEmpty() || dataField.isEmpty()) {
+                    // Maybe debug-log or ignore
+                    continue;
+                }
+
+                // If we do have a recognized event, call its callback
+                if (callbacks.contains(event)) {
+                    QStringList patterns = callbacks[event];
+                    for (auto &identifier : patterns) {
+                        QJSValue caller = identifiers.value(identifier);
+                        if (caller.isCallable()) {
+                            caller.call(QJSValueList{ dataField });
+                        } else {
+                            // Callback not callable => remove it to avoid repeated invalid calls
+                            identifiers.remove(identifier);
+                            patterns.removeOne(identifier);
+                            callbacks[event] = patterns;
+                            qDebug() << "Callback not callable : " << caller.toString();
+                        }
+                    }
+                } else {
+                    qWarning() << "Event not found in callbacks:" << event;
                 }
             }
         }
     });
 
-    QObject::connect(reply, &QNetworkReply::errorOccurred, [reply]() {
-        QString data = reply->readAll();
-        // qDebug() << "Error: " << data;
-    });
 
-    QObject::connect(reply, &QNetworkReply::finished, this, [=](){
+    QObject::connect(reply, &QNetworkReply::errorOccurred, [reply, this]()
+                     {
+                         QString data = reply->readAll();
+                         // qDebug() << "Error: " << data;
+                     });
+
+    QObject::connect(reply, &QNetworkReply::finished, this, [=]() {
         reply->deleteLater();
         connect();
     });
@@ -128,7 +176,8 @@ void CollectionSubscriber::sub(QString topic, bool all)
     request.setRawHeader("Accept", "*/*");
 
     QJsonArray subs;
-    for (QString topic : subscriptionList) {
+    for (QString topic : subscriptionList)
+    {
         subs.append(topic);
     }
 
@@ -136,11 +185,11 @@ void CollectionSubscriber::sub(QString topic, bool all)
     json.insert("clientId", clientId);
     json.insert("subscriptions", subs);
 
-
     QJsonDocument doc(json);
     // qDebug () << "Sending subscription request" << doc.toJson();
     QNetworkReply *subReply = manager->post(request, doc.toJson());
-    QObject::connect(subReply, &QNetworkReply::finished, this, [=](){
+    QObject::connect(subReply, &QNetworkReply::finished, this, [=]()
+                     {
         int statusCode = subReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         QString data = subReply->readAll();
         if (statusCode != 204)
@@ -149,8 +198,7 @@ void CollectionSubscriber::sub(QString topic, bool all)
             if (data.contains("invalid client")) {
                 connect();
             }
-        }
-    });
+        } });
 }
 
 bool CollectionSubscriber::connected() const

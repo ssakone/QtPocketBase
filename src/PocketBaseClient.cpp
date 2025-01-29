@@ -33,10 +33,10 @@ PocketBaseCollectionPromise *PocketBaseClient::updateCollection(QString collecti
     return request.update(collectionId, updateCollection->toJson());
 }
 
-PocketBaseCollectionPromise *PocketBaseClient::createCollection(PocketBaseCollection *newCollection)
+PocketBaseCollectionPromise *PocketBaseClient::createCollection(QJSValue data)
 {
     request.setRoute("/collections");
-    return request.create(newCollection->toJson());
+    return request.create(data.toVariant().toJsonObject());
 }
 
 PocketBaseCollectionPromise *PocketBaseClient::deleteCollection(QString collectionId)

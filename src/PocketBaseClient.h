@@ -23,7 +23,7 @@ public:
 
     Q_INVOKABLE void addCollection(PocketBaseCollection *collection);
     Q_INVOKABLE PocketBaseCollectionPromise *updateCollection(QString collectionId, PocketBaseCollection *updateCollection);
-    Q_INVOKABLE PocketBaseCollectionPromise *createCollection(PocketBaseCollection *newCollection);
+    Q_INVOKABLE PocketBaseCollectionPromise *createCollection(QJSValue data);
     Q_INVOKABLE PocketBaseCollectionPromise *deleteCollection(QString collectionId);
     Q_INVOKABLE PocketBaseCollectionPromise *getCollection(QString collectionId);
     Q_INVOKABLE PocketBaseCollectionPromise *importCollection(QJSValue json);

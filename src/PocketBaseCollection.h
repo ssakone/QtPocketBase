@@ -76,6 +76,7 @@ private:
     QStringList m_fields = {};
 
     PocketRequest *request;
+    PocketRequest *viewRequest;
 
 
     PocketBaseCollectionSchema *m_schema = nullptr;

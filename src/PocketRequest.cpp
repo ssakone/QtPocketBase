@@ -1,14 +1,17 @@
 #include "PocketRequest.h"
-#include "PocketBaseClient.h"
 #include "PocketUtility.h"
 #include "qjsondocument.h"
 #include "qurlquery.h"
+#include "pocketnetworkmanager.h"
+#include "PocketBaseSettings.h"
+#include <QFileInfo>
+#include <QFile>
+#include <QDir>
 
 PocketRequest::PocketRequest(QObject *parent)
     : QObject{parent}
 {
-    manager = new QNetworkAccessManager(this);
-
+    manager = PocketNetworkManager::instance2();
 }
 
 PocketBaseCollectionPromise *PocketRequest::getOne(QString id, QJsonObject options)
