@@ -28,6 +28,7 @@ qt6_add_qml_module(PocketBase
     SOURCES src/CollectionSubscriber.h src/CollectionSubscriber.cpp
     SOURCES src/PocketBaseServer.h src/PocketBaseServer.cpp
     SOURCES src/PocketBaseSettings.h src/PocketBaseSettings.cpp
+    SOURCES src/pocketnetworkmanager.h src/pocketnetworkmanager.cpp
 )
 
 target_link_libraries(PocketBase
