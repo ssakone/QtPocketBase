@@ -26,24 +26,24 @@ class PocketBaseCollection : public QObject
 public:
     explicit PocketBaseCollection(QObject *parent = nullptr);
 
-    Q_INVOKABLE PocketBaseCollectionPromise *getOne(QString id, QJSValue options = {});
-    Q_INVOKABLE PocketBaseCollectionPromise *getList(int page = 1, int perPage = 15, QJSValue options = {});
-    Q_INVOKABLE PocketBaseCollectionPromise *create(QJSValue data);
-    Q_INVOKABLE PocketBaseCollectionPromise *create(QString data);
-    Q_INVOKABLE PocketBaseCollectionPromise *createWithFile(QJSValue data,
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *getOne(QString id, QJSValue options = {});
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *getList(int page = 1, int perPage = 15, QJSValue options = {});
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *create(QJSValue data);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *create(QString data);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *createWithFile(QJSValue data,
                                                             QJSValue files);
-    Q_INVOKABLE PocketBaseCollectionPromise *update(QString id, QJSValue data, QJSValue options = {});
-    Q_INVOKABLE PocketBaseCollectionPromise *updateWithFile(QString id, QJSValue data,
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *update(QString id, QJSValue data, QJSValue options = {});
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *updateWithFile(QString id, QJSValue data,
                                                             QJSValue files);
-    Q_INVOKABLE PocketBaseCollectionPromise *deleteFile(QString id, QJSValue files);
-    Q_INVOKABLE PocketBaseCollectionPromise *deleteOne(QString id);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *deleteFile(QString id, QJSValue files);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *deleteOne(QString id);
 
-    Q_INVOKABLE PocketBaseCollectionPromise *getViewList(QString view, int page = 1, int perPage = 15, QJSValue options = {});
-    Q_INVOKABLE PocketBaseCollectionPromise *getViewOne(QString view, QString id, QJSValue options = {});
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *getViewList(QString view, int page = 1, int perPage = 15, QJSValue options = {});
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *getViewOne(QString view, QString id, QJSValue options = {});
 
     Q_INVOKABLE QString getFileUrl(QString fileId, QString fileName);
 
-    Q_INVOKABLE PocketBaseCollectionPromise *send(QString path, QString method, QJSValue data = {}, QJSValue options = {});
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *send(QString path, QString method, QJSValue data = {}, QJSValue options = {});
 
     QJsonObject getOptions(QJSValue options = {});
     Q_INVOKABLE void prepare();
@@ -57,7 +57,7 @@ public:
     QString name() const;
     void setName(const QString &newName);
 
-    PocketRequest *getRequest() const;
+    [[nodiscard]] PocketRequest *getRequest() const;
 
     QJsonObject toJson();
 

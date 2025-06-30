@@ -8,8 +8,8 @@ class PocketBaseSettings : public QSettings
 {
 public:
     explicit PocketBaseSettings(QObject *parent = nullptr);
-    static QString getToken();
-    static QString getApiUrl();
+    [[nodiscard]] static QString getToken();
+    [[nodiscard]] static QString getApiUrl();
 
     static void setToken(QString token);
     static void setApiUrl(QString apiUrl);

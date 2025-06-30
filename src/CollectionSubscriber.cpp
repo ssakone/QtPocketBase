@@ -76,7 +76,7 @@ void CollectionSubscriber::connect()
     // manager->setTransferTimeout(2000);
     QNetworkReply *reply = manager->get(subscriptionRequest);
 
-    QObject::connect(reply, &QNetworkReply::readyRead, this, [=]() {
+    QObject::connect(reply, &QNetworkReply::readyRead, this, [reply, this]() {
         QString data = reply->readAll();
 
         // If we see "clientId", parse out the ID if possible
@@ -158,7 +158,7 @@ void CollectionSubscriber::connect()
                          // qDebug() << "Error: " << data;
                      });
 
-    QObject::connect(reply, &QNetworkReply::finished, this, [=]() {
+    QObject::connect(reply, &QNetworkReply::finished, this, [reply, this]() {
         reply->deleteLater();
         connect();
     });
@@ -188,7 +188,7 @@ void CollectionSubscriber::sub(QString topic, bool all)
     QJsonDocument doc(json);
     // qDebug () << "Sending subscription request" << doc.toJson();
     QNetworkReply *subReply = manager->post(request, doc.toJson());
-    QObject::connect(subReply, &QNetworkReply::finished, this, [=]()
+    QObject::connect(subReply, &QNetworkReply::finished, this, [subReply, this]()
                      {
         int statusCode = subReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         QString data = subReply->readAll();

@@ -1,5 +1,5 @@
-import QtQuick
-import PocketBase
+import QtQuick 6.10
+import PocketBase 1.0
 
 BaseCollection {
 	id: collection

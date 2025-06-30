@@ -11,16 +11,16 @@ class PocketBaseCollectionPromise : public QObject
 public:
     explicit PocketBaseCollectionPromise(QObject *parent = nullptr);
 
-    Q_INVOKABLE PocketBaseCollectionPromise * then(QJSValue callback);
-    Q_INVOKABLE PocketBaseCollectionPromise * error(QJSValue callback);
-    Q_INVOKABLE PocketBaseCollectionPromise * progress(QJSValue callback);
-    Q_INVOKABLE PocketBaseCollectionPromise * finally(QJSValue callback);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise * then(QJSValue callback);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise * error(QJSValue callback);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise * progress(QJSValue callback);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise * finally(QJSValue callback);
 
 
-    QJSValue getThen() const;
-    QJSValue getError() const;
-    QJSValue getProgress() const;
-    QJSValue getFinally() const;
+    [[nodiscard]] QJSValue getThen() const;
+    [[nodiscard]] QJSValue getError() const;
+    [[nodiscard]] QJSValue getProgress() const;
+    [[nodiscard]] QJSValue getFinally() const;
 
     void callThen(QJSValueList args);
     void callError(QJSValueList args);
