@@ -22,21 +22,21 @@ public:
     explicit PocketBaseClient(QObject *parent = nullptr);
 
     Q_INVOKABLE void addCollection(PocketBaseCollection *collection);
-    Q_INVOKABLE PocketBaseCollectionPromise *updateCollection(QString collectionId, PocketBaseCollection *updateCollection);
-    Q_INVOKABLE PocketBaseCollectionPromise *createCollection(QJSValue data);
-    Q_INVOKABLE PocketBaseCollectionPromise *deleteCollection(QString collectionId);
-    Q_INVOKABLE PocketBaseCollectionPromise *getCollection(QString collectionId);
-    Q_INVOKABLE PocketBaseCollectionPromise *importCollection(QJSValue json);
-    Q_INVOKABLE PocketBaseCollectionPromise *update(QString collectionName, QString id, QJSValue data, QJSValue options = {});
-    Q_INVOKABLE PocketBaseCollectionPromise *getCollections();
-    Q_INVOKABLE PocketBaseCollectionPromise *isHealthy();
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *updateCollection(QString collectionId, PocketBaseCollection *updateCollection);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *createCollection(QJSValue data);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *deleteCollection(QString collectionId);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *getCollection(QString collectionId);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *importCollection(QJSValue json);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *update(QString collectionName, QString id, QJSValue data, QJSValue options = {});
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *getCollections();
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *isHealthy();
 
-    Q_INVOKABLE PocketBaseCollection *collection(const QString &collectionName);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollection *collection(const QString &collectionName);
 
-    Q_INVOKABLE PocketBaseCollectionPromise *authAdminWithPassword(QString identity, QString password);
-    Q_INVOKABLE PocketBaseCollectionPromise *authWithCollection(QString collectionName, QString identity, QString password);
-    Q_INVOKABLE PocketBaseCollectionPromise *authRefreshCollection(QString collectionName);
-    Q_INVOKABLE PocketBaseCollectionPromise *createNewAdmin(QString email, QString identity, QString password);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *authAdminWithPassword(QString identity, QString password);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *authWithCollection(QString collectionName, QString identity, QString password);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *authRefreshCollection(QString collectionName);
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise *createNewAdmin(QString email, QString identity, QString password);
 
     // Q_INVOKABLE QString getFileUrl(QString fileId);
 

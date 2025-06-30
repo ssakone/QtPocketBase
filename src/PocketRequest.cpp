@@ -223,7 +223,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
 
     reply = manager->sendCustomRequest(request, methodToString(method));
 
-    connect(reply, &QNetworkReply::finished, promise, [=]()
+    connect(reply, &QNetworkReply::finished, promise, [reply, promise]()
             {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
@@ -235,7 +235,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
             promise->callError(QJSValueList{QString(QJsonDocument(error).toJson())});
         } });
 
-    connect(reply, &QNetworkReply::errorOccurred, promise, [=](QNetworkReply::NetworkError error)
+    connect(reply, &QNetworkReply::errorOccurred, promise, [reply, promise](QNetworkReply::NetworkError error)
             {
         if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError) {
             QJsonObject errorJson;
@@ -267,7 +267,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest request,
             promise->callError(QJSValueList{QString(QJsonDocument(error).toJson())});
         } });
 
-    connect(reply, &QNetworkReply::errorOccurred, promise, [=](QNetworkReply::NetworkError error)
+    connect(reply, &QNetworkReply::errorOccurred, promise, [reply, promise](QNetworkReply::NetworkError error)
             {
         if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError) {
             QJsonObject errorJson;
@@ -287,7 +287,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest *request
 
     reply = manager->sendCustomRequest(*request, methodToString(method), multipart);
 
-    connect(reply, &QNetworkReply::finished, promise, [=]()
+    connect(reply, &QNetworkReply::finished, promise, [reply, promise]()
             {
         if (reply->error() == QNetworkReply::NoError) {
             promise->callThen(QJSValueList{QString(reply->readAll())});
@@ -299,7 +299,7 @@ PocketBaseCollectionPromise *PocketRequest::makeRequest(QNetworkRequest *request
             promise->callError(QJSValueList{QString(QJsonDocument(error).toJson())});
         } });
 
-    connect(reply, &QNetworkReply::errorOccurred, promise, [=](QNetworkReply::NetworkError error)
+    connect(reply, &QNetworkReply::errorOccurred, promise, [reply, promise](QNetworkReply::NetworkError error)
             {
                 if (error == QNetworkReply::ConnectionRefusedError || error == QNetworkReply::HostNotFoundError || error == QNetworkReply::TimeoutError || error == QNetworkReply::UnknownNetworkError)
                 {
@@ -537,13 +537,13 @@ PocketBaseCollectionPromise *PocketRequest::downloadFile(const QString &url, con
         return promise;
     }
 
-    connect(reply, &QNetworkReply::readyRead, [=]()
+    connect(reply, &QNetworkReply::readyRead, [reply, file]()
             {
         if (file->isOpen()) {
             file->write(reply->readAll());
         } });
 
-    connect(reply, &QNetworkReply::finished, promise, [=]()
+    connect(reply, &QNetworkReply::finished, promise, [reply, file, promise]()
             {
         if (file->isOpen()) {
             file->close();

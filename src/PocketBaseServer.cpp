@@ -3,29 +3,30 @@
 #include <QDir>
 #include <QFileSystemWatcher>
 #include <QDirIterator>
+#include <memory>
 
 
 PocketBaseServer::PocketBaseServer(QObject *parent)
     : QObject{parent}
 {
     #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
-        process = new QProcess(this);
+        m_process = std::make_unique<QProcess>(this);
 
-        connect(process, &QProcess::started, this, [this](){
+        connect(m_process.get(), &QProcess::started, this, [this](){
             setRunning(true);
         });
 
-        connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this](int exitCode, QProcess::ExitStatus exitStatus){
+        connect(m_process.get(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this](int, QProcess::ExitStatus){
             setRunning(false);
             setReady(false);
         });
 
-        connect(process, &QProcess::errorOccurred, this, [](QProcess::ProcessError error){
+        connect(m_process.get(), &QProcess::errorOccurred, this, [](QProcess::ProcessError error){
             qWarning() << "\033[31m" << "Error occurred:" << error << "\033[39m";
         });
 
-        connect(process, &QProcess::readyReadStandardOutput, this, [this](){
-            QByteArray data = process->readAllStandardOutput();
+        connect(m_process.get(), &QProcess::readyReadStandardOutput, this, [this](){
+            QByteArray data = m_process->readAllStandardOutput();
             if (data.contains("Server started")) setReady(true);
             qInfo() << "\033[33m" << data.toStdString().c_str() << "\033[39m";
         });
@@ -52,8 +53,8 @@ bool PocketBaseServer::start()
 
     qInfo() << "Starting server with args:" << m_binaryPath << args.join(" ");
 
-    process->start(m_binaryPath, args);
-    return  process->waitForStarted();
+    m_process->start(m_binaryPath, args);
+    return  m_process->waitForStarted();
 
 #elif defined(Q_OS_WASM) || defined(Q_OS_IOS)
     return false;
@@ -67,9 +68,9 @@ PocketBaseCollectionPromise * PocketBaseServer::stop()
 {
     #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
         stopProcess();
-        PocketBaseCollectionPromise * promise = new PocketBaseCollectionPromise(this);
-        process->terminate();
-        process->waitForFinished();
+        auto * promise = new PocketBaseCollectionPromise(this);
+        m_process->terminate();
+        m_process->waitForFinished();
         promise->callThen({});
         return promise;
     #elif defined(Q_OS_WASM) || defined(Q_OS_IOS)

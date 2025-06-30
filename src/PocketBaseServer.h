@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QProcess>
+#include <memory>
 #include "PocketBaseCollectionPromise.h"
 
 class PocketBaseServer : public QObject
@@ -21,41 +22,41 @@ class PocketBaseServer : public QObject
 public:
     explicit PocketBaseServer(QObject *parent = nullptr);
 
-    Q_INVOKABLE bool start();
-    Q_INVOKABLE PocketBaseCollectionPromise * stop();
-    Q_INVOKABLE bool restart();
+    [[nodiscard]] Q_INVOKABLE bool start();
+    [[nodiscard]] Q_INVOKABLE PocketBaseCollectionPromise * stop();
+    [[nodiscard]] Q_INVOKABLE bool restart();
 
-    qint64 isRunning();
+    [[nodiscard]] qint64 isRunning();
     void stopProcess();
 
-    QString address() const;
+    [[nodiscard]] QString address() const;
     void setAddress(const QString &newAddress);
 
-    int port() const;
+    [[nodiscard]] int port() const;
     void setPort(int newPort);
 
-    bool running() const;
+    [[nodiscard]] bool running() const;
     void setRunning(bool newRunning);
 
-    QString hookFolder() const;
+    [[nodiscard]] QString hookFolder() const;
     void setHookFolder(const QString &newHookFolder);
 
-    QString publicFolder() const;
+    [[nodiscard]] QString publicFolder() const;
     void setPublicFolder(const QString &newPublicFolder);
 
-    QString dataFolder() const;
+    [[nodiscard]] QString dataFolder() const;
     void setDataFolder(const QString &newDataFolder);
 
-    QString binaryPath() const;
+    [[nodiscard]] QString binaryPath() const;
     void setBinaryPath(const QString &newBinaryPath);
 
-    bool ready() const;
+    [[nodiscard]] bool ready() const;
     void setReady(bool newReady);
 
-    bool devMode() const;
+    [[nodiscard]] bool devMode() const;
     void setDevMode(bool newDevMode);
 
-    QString migrationDir() const;
+    [[nodiscard]] QString migrationDir() const;
     void setMigrationDir(const QString &newMigrationDir);
 
 signals:
@@ -81,7 +82,7 @@ signals:
 private:
     QString m_address = "localhost";
     #if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(Q_OS_LINUX)
-    QProcess *process;
+    std::unique_ptr<QProcess> m_process;
     #endif
     int m_port = 8090;
     bool m_running = false;

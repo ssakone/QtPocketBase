@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QMimeDatabase>
 #include <QMimeType>
+#include <memory>
 #include <QJsonDocument>
 #include <QStringList>
 
@@ -30,14 +31,16 @@ QJsonObject PocketUtility::jsvalueToJsonObject(QJSValue value)
 
 void PocketUtility::jsonToFormData(QHttpMultiPart *multiPart, QJsonObject &dataObject)
 {
-    for (QString key : dataObject.keys()) {
+    for (const auto &key : dataObject.keys()) {
         QHttpPart jsonPart;
         jsonPart.setHeader(QNetworkRequest::ContentDispositionHeader,
                            QVariant("form-data; name=\"" + key + "\""));
 
         QJsonValue value = dataObject.value(key);
-        if (value.isObject() || value.isArray()) {
-            jsonPart.setBody(value.toVariant().toJsonDocument().toJson());
+        if (value.isObject()) {
+            jsonPart.setBody(QJsonDocument(value.toObject()).toJson());
+        } else if (value.isArray()) {
+            jsonPart.setBody(QJsonDocument(value.toArray()).toJson());
         } else {
             jsonPart.setBody(value.toString().toUtf8());
         }
@@ -48,15 +51,15 @@ void PocketUtility::jsonToFormData(QHttpMultiPart *multiPart, QJsonObject &dataO
 
 void PocketUtility::jsonFilesToFormData(QHttpMultiPart *multiPart, QJsonObject &filesObject, bool removing)
 {
-    QStringList keys = filesObject.keys();
-    for (int i = 0; i < keys.size(); i++) {
+    const QStringList keys = filesObject.keys();
+    for (const auto &key : keys) {
         QHttpPart filePart;
 
-        QJsonArray filePaths = filesObject[keys[i]].toArray();
+        const QJsonArray filePaths = filesObject[key].toArray();
 
-        for(const QJsonValue &jsonfilePath : filePaths) {
-            QString filePath = jsonfilePath.toString();
-            QFile *file = new QFile(filePath);
+        for (const QJsonValue &jsonfilePath : filePaths) {
+            const QString filePath = jsonfilePath.toString();
+            auto file = std::make_unique<QFile>(filePath);
 
 
 
@@ -64,13 +67,11 @@ void PocketUtility::jsonFilesToFormData(QHttpMultiPart *multiPart, QJsonObject &
             QMimeType mimeType = mimeDb.mimeTypeForFile(filePath);
             QString contentDispositionValue;
 
-            bool ok = file->open(QIODevice::ReadOnly);
+            const bool ok = file->open(QIODevice::ReadOnly);
             if (removing) {
-                contentDispositionValue = "form-data; name=\"photo." + filePath +
-                                          "\"";
+                contentDispositionValue = "form-data; name=\"photo." + filePath + "\"";
             } else {
-                contentDispositionValue = "form-data; name=\"" + keys[i] +
-                                          "\"; filename=\"" + file->fileName() + "\"";
+                contentDispositionValue = "form-data; name=\"" + key + "\"; filename=\"" + file->fileName() + "\"";
             }
 
             if (ok)
@@ -88,10 +89,9 @@ void PocketUtility::jsonFilesToFormData(QHttpMultiPart *multiPart, QJsonObject &
                                contentDisposition);
             if (ok)
             {
-                filePart.setBodyDevice(file);
-                file->setParent(multiPart);
-            } else {
-                delete file;
+                auto *f = file.release();
+                filePart.setBodyDevice(f);
+                f->setParent(multiPart);
             }
 
             multiPart->append(filePart);

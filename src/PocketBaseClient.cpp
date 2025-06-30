@@ -13,7 +13,7 @@ PocketBaseClient::PocketBaseClient(QObject *parent)
                      { setConnected(subscriber->connected()); });
 
     QTimer *timer = new QTimer(this);
-    QObject::connect(timer, &QTimer::timeout, this, [=]()
+    QObject::connect(timer, &QTimer::timeout, this, [this]()
                      { isHealthy(); });
 
     timer->start(800);
@@ -120,7 +120,7 @@ PocketBaseCollectionPromise *PocketBaseClient::authAdminWithPassword(QString ide
 {
     request.setRoute("/admins/auth-with-password");
     PocketBaseCollectionPromise *promise = request.authWithPassword(identity, password);
-    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [=](QJSValueList response)
+    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [this](QJSValueList response)
                      {
         QJsonObject data = QJsonDocument::fromJson(QByteArray::fromStdString(response.toList().at(0).toString().toStdString())).object();
         setAuthToken(data.value("token").toString()); });
@@ -131,7 +131,7 @@ PocketBaseCollectionPromise *PocketBaseClient::authWithCollection(QString collec
 {
     request.setRoute("/collections/" + collectionName + "/auth-with-password");
     PocketBaseCollectionPromise *promise = request.authWithPassword(identity, password);
-    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [=](QJSValueList response)
+    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [this](QJSValueList response)
                      {
         QJsonObject data = QJsonDocument::fromJson(QByteArray::fromStdString(response.toList().at(0).toString().toStdString())).object();
         setAuthToken(data.value("token").toString()); });
@@ -142,7 +142,7 @@ PocketBaseCollectionPromise *PocketBaseClient::authRefreshCollection(QString col
 {
     request.setRoute("/collections/" + collectionName + "/auth-refresh");
     PocketBaseCollectionPromise *promise = request.authRefresh();
-    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [=](QJSValueList response)
+    QObject::connect(promise, &PocketBaseCollectionPromise::onThen, this, [this](QJSValueList response)
                      {
         QJsonObject data = QJsonDocument::fromJson(QByteArray::fromStdString(response.toList().at(0).toString().toStdString())).object();
         setAuthToken(data.value("token").toString()); });
