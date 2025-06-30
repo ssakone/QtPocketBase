@@ -17,11 +17,6 @@ qt6_add_qml_module(PocketBase
     SOURCES src/PocketBase.hpp
     SOURCES src/PocketBaseCollection.h src/PocketBaseCollection.cpp
     SOURCES src/PocketBaseCollectionPromise.h src/PocketBaseCollectionPromise.cpp
-    SOURCES src/PocketBaseCollectionSchema.h src/PocketBaseCollectionSchema.cpp
-    SOURCES src/PocketBaseCollectionField.h src/PocketBaseCollectionField.cpp
-    SOURCES src/CollectionFieldOptions.h src/CollectionFieldOptions.cpp
-    SOURCES src/CollectionTextFieldOptions.h src/CollectionTextFieldOptions.cpp
-    SOURCES src/CollectionFileFieldOptions.h src/CollectionFileFieldOptions.cpp
     SOURCES src/PocketBaseClient.h src/PocketBaseClient.cpp
     SOURCES src/PocketRequest.h src/PocketRequest.cpp
     SOURCES src/PocketUtility.h src/PocketUtility.cpp

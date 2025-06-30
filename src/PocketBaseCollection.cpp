@@ -115,19 +115,7 @@ QJsonObject PocketBaseCollection::getOptions(QJSValue options)
 
 void PocketBaseCollection::prepare()
 {
-    PocketBaseCollectionSchema *schema = findChild<PocketBaseCollectionSchema*>();
-    QJsonObject collectionSchema = {};
-    collectionSchema["schema"] = schema->schemaJson();
-    collectionSchema["name"] = schema->name();
-    collectionSchema["type"] = "base";
-    collectionSchema["indexes"] = QJsonArray();
-    collectionSchema["listRule"] = schema->listRule();
-    collectionSchema["viewRule"] = schema->viewRule();
-    collectionSchema["createRule"] = schema->createRule();
-    collectionSchema["updateRule"] = schema->updateRule();
-    collectionSchema["deleteRule"] = schema->deleteRule();
-    collectionSchema["id"] = schema->collectionId();
-    collectionSchema["options"] = QJsonObject();
+
 }
 
 
@@ -172,18 +160,6 @@ void PocketBaseCollection::setName(const QString &newName)
     emit nameChanged();
 }
 
-PocketBaseCollectionSchema *PocketBaseCollection::schema() const
-{
-    return m_schema;
-}
-
-void PocketBaseCollection::setSchema(PocketBaseCollectionSchema *newSchema)
-{
-    if (m_schema == newSchema)
-        return;
-    m_schema = newSchema;
-    emit schemaChanged();
-}
 
 PocketRequest *PocketBaseCollection::getRequest() const
 {
@@ -192,21 +168,5 @@ PocketRequest *PocketBaseCollection::getRequest() const
 
 QJsonObject PocketBaseCollection::toJson()
 {
-    if (m_schema) {
-        PocketBaseCollectionSchema *schema = findChild<PocketBaseCollectionSchema*>();
-        QJsonObject collectionSchema = {};
-        collectionSchema["schema"] = schema->schemaJson();
-        collectionSchema["name"] = schema->name();
-        collectionSchema["type"] = "base";
-        collectionSchema["indexes"] = QJsonArray();
-        collectionSchema["listRule"] = schema->listRule();
-        collectionSchema["viewRule"] = schema->viewRule();
-        collectionSchema["createRule"] = schema->createRule();
-        collectionSchema["updateRule"] = schema->updateRule();
-        collectionSchema["deleteRule"] = schema->deleteRule();
-        collectionSchema["id"] = schema->collectionId();
-        collectionSchema["options"] = QJsonObject();
-        return collectionSchema;
-    }
     return QJsonObject();
 }

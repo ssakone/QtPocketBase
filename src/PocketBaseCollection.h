@@ -17,11 +17,11 @@ class PocketBaseCollection : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_NAMED_ELEMENT(BaseCollection)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged FINAL)
     Q_PROPERTY(QString expands READ expands WRITE setExpands NOTIFY expandChangeds FINAL)
     Q_PROPERTY(QStringList fields READ fields WRITE setFields NOTIFY fieldsChanged FINAL)
 
-    Q_PROPERTY(PocketBaseCollectionSchema *schema READ schema WRITE setSchema NOTIFY schemaChanged FINAL)
 
 public:
     explicit PocketBaseCollection(QObject *parent = nullptr);
@@ -57,9 +57,6 @@ public:
     QString name() const;
     void setName(const QString &newName);
 
-    PocketBaseCollectionSchema *schema() const;
-    void setSchema(PocketBaseCollectionSchema *newSchema);
-
     PocketRequest *getRequest() const;
 
     QJsonObject toJson();
@@ -79,7 +76,6 @@ private:
     PocketRequest *viewRequest;
 
 
-    PocketBaseCollectionSchema *m_schema = nullptr;
 
 signals:
     void expandChangeds();
